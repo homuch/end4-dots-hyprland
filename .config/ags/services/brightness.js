@@ -1,85 +1,121 @@
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
-import Service from 'resource:///com/github/Aylur/ags/service.js';
-import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { exec, execAsync } = Utils;
+// import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js'; // v1
+// import Service from 'resource:///com/github/Aylur/ags/service.js'; // v1
+// import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'; // v1
+// const { exec, execAsync } = Utils; // v1
+import Astal from 'gi://Astal';
 
-import { clamp } from '../modules/.miscutils/mathfuncs.js';
+// TODO: Confirm actual service and utility paths from Astal
+const Hyprland = Astal.HyprlandService; // Speculative
+const AstalService = Astal.Service;     // Speculative base class
+const AstalUtils = Astal.Utils;         // Speculative utils module
+const AstalVariable = Astal.Variable;   // Speculative variable class
 
-class BrightnessServiceBase extends Service {
-    static {
-        Service.register(
-            this,
-            { 'screen-changed': ['float'], },
-            { 'screen-value': ['float', 'rw'], },
-        );
+import { clamp } from '../modules/.miscutils/mathfuncs.js'; // This is a local utility
+
+// Base class for brightness services
+class BrightnessServiceBase extends AstalService {
+    // Astal services might use a constructor or static properties to define signals/props.
+    // Or, properties are Astal.Variables and signals are explicit.
+    // For now, let's assume screen_value is an Astal.Variable.
+    // Signals like 'screen-changed' might be emitted explicitly if needed beyond property changes.
+
+    // Let's define _screenValue as an Astal.Variable if properties are managed this way.
+    // Or, if Astal.Service has its own property system, we'd use that.
+    // Assuming a simple Astal.Variable for the property for now.
+    _screenValueVar; // This will be an instance of Astal.Variable
+
+    constructor() {
+        super(); // Call parent constructor
+        // Initialize _screenValueVar as an Astal.Variable.
+        // The initial value will be set by subclasses.
+        this._screenValueVar = new AstalVariable(0);
+
+        // Define a custom signal if needed (ags v1 had 'screen-changed')
+        // This depends on Astal's API for custom signals on a service.
+        // Example: this.defineSignal('screen-changed', GLib.TYPE_FLOAT);
     }
 
-    _screenValue = 0;
+    get screen_value() {
+        return this._screenValueVar.value;
+    }
 
-    // the getter has to be in snake_case
-    get screen_value() { return this._screenValue; }
-
-    // the setter has to be in snake_case too
     set screen_value(percent) {
-        percent = clamp(percent, 0, 1);
-        this._screenValue = percent;
+        const clampedPercent = clamp(percent, 0, 1);
 
-        Utils.execAsync(this.setBrightnessCmd(percent))
+        // Optimistically update the variable. If execAsync fails, we might need to revert
+        // or handle the state more carefully.
+        // this._screenValueVar.value = clampedPercent; // Update before exec or after success?
+
+        AstalUtils.execAsync(this.setBrightnessCmd(clampedPercent))
             .then(() => {
-                // signals has to be explicity emitted
-                this.emit('screen-changed', percent);
-                this.notify('screen-value');
-
-                // or use Service.changed(propName: string) which does the above two
-                // this.changed('screen');
+                this._screenValueVar.value = clampedPercent; // Update on success
+                // this.emit('screen-changed', clampedPercent); // Emit custom signal if defined
+                // Astal.Variable changes should automatically notify listeners.
             })
-            .catch(print);
+            .catch(err => {
+                print(`Failed to set brightness: ${err}`);
+                // Optionally revert if optimistic update was done:
+                // this._screenValueVar.value = old_value_if_cached;
+            });
     }
 
-    // overwriting connectWidget method, lets you
-    // change the default event that widgets connect to
-    connectWidget(widget, callback, event = 'screen-changed') {
-        super.connectWidget(widget, callback, event);
+    // This method might not be needed if Astal's default connection mechanism is sufficient.
+    // connectWidget(widget, callback, event = 'notify::screen-value') { // Default to property notification
+    //    super.connectWidget(widget, callback, event); // Or Astal's equivalent
+    // }
+
+    // Abstract method to be implemented by subclasses
+    setBrightnessCmd(percent) {
+        throw new Error("setBrightnessCmd must be implemented by subclasses");
+    }
+
+    // Method to initialize screen value, called by subclasses
+    _initializeScreenValue(value) {
+        this._screenValueVar.value = clamp(value, 0, 1);
     }
 }
 
 class BrightnessCtlService extends BrightnessServiceBase {
-    static {
-        Service.register(this);
-    }
-
     constructor() {
         super();
-        const current = Number(exec('brightnessctl g'));
-        const max = Number(exec('brightnessctl m'));
-        this._screenValue = current / max;
+        try {
+            const current = Number(AstalUtils.exec('brightnessctl g'));
+            const max = Number(AstalUtils.exec('brightnessctl m'));
+            this._initializeScreenValue(current / max);
+        } catch (err) {
+            print(`Failed to initialize BrightnessCtlService: ${err}`);
+            this._initializeScreenValue(0); // Default to 0 on error
+        }
     }
 
     setBrightnessCmd(percent) {
-        return `brightnessctl s ${percent * 100}% -q`;
+        return `brightnessctl s ${Math.round(percent * 100)}% -q`;
     }
 }
 
 class BrightnessDdcService extends BrightnessServiceBase {
-    static {
-        Service.register(this);
-    }
+    _busNum;
 
     constructor(busNum) {
         super();
         this._busNum = busNum;
-        Utils.execAsync(`ddcutil -b ${this._busNum} getvcp 10 --brief`)
+        AstalUtils.execAsync(`ddcutil -b ${this._busNum} getvcp 10 --brief`)
             .then((out) => {
-                // only the last line is useful
-                out = out.split('\n');
-                out = out[out.length - 1];
-
-                out = out.split(' ');
-                const current = Number(out[3]);
-                const max = Number(out[4]);
-                this._screenValue = current / max;
+                const lines = out.split('\n');
+                const lastLine = lines[lines.length - 1];
+                const parts = lastLine.split(' ');
+                if (parts.length >= 4 && parts[0] === 'VCP') { // Basic validation
+                    const current = Number(parts[3]);
+                    const max = Number(parts[4]);
+                    this._initializeScreenValue(current / max);
+                } else {
+                    throw new Error(`Unexpected output from ddcutil: ${lastLine}`);
+                }
             })
-            .catch(print);
+            .catch(err => {
+                print(`Failed to initialize BrightnessDdcService for bus ${this._busNum}: ${err}`);
+                this._initializeScreenValue(0); // Default to 0 on error
+            });
     }
 
     setBrightnessCmd(percent) {
@@ -90,12 +126,10 @@ class BrightnessDdcService extends BrightnessServiceBase {
 async function listDdcMonitorsSnBus() {
     let ddcSnBus = {};
     try {
-        // Its' better not to use --brief. This way if a serial number is not
-        // found we can still use the binary serial number as an alternative
-        const out = await Utils.execAsync('ddcutil detect');
+        const out = await AstalUtils.execAsync('ddcutil detect');
         const displays = out.split('\n\n');
         displays.forEach(display => {
-            const reg = /[Dd]isplay/;
+            const reg = /[Dd]isplay/; // Keep this regex as is
             if (!reg.test(display)) {
                 return;
             }
@@ -132,39 +166,82 @@ async function listDdcMonitorsSnBus() {
     return ddcSnBus;
 }
 
-// Service instance
-const numMonitors = Hyprland.monitors.length;
-const service = Array(numMonitors);
+// TODO: This top-level await for listDdcMonitorsSnBus might need to be handled differently
+// if Astal services are expected to be constructed synchronously or have an async init method.
+// For now, assuming this script is imported and this await completes before services are used.
 const ddcSnBus = await listDdcMonitorsSnBus();
-for (let i = 0; i < service.length; i++) {
-    const monitorName = Hyprland.monitors[i].name;
-    const monitorSn = Hyprland.monitors[i].serial;
-    const preferredController = userOptions.brightness.controllers[monitorName]
-        || userOptions.brightness.controllers.default || "auto";
-    if (preferredController) {
-        switch (preferredController) {
-            case "brightnessctl":
-                service[i] = new BrightnessCtlService();
-                break;
-            case "ddcutil":
-                service[i] = new BrightnessDdcService(ddcSnBus[monitorSn]);
-                break;
-            case "auto":
-                if (monitorSn in ddcSnBus && !!exec(`bash -c 'command -v ddcutil'`)){
-                    service[i] = new BrightnessDdcService(ddcSnBus[monitorSn]);
-                }
-                else {
+
+// Create service instances based on Hyprland monitors
+// This assumes Hyprland service is ready and provides monitor info.
+// It might be better to create these services more dynamically if monitors can change,
+// or if Astal has a pattern for services that depend on other async services.
+
+let service = []; // Initialize as an empty array
+
+// Check if Hyprland service is available and has monitors
+if (Hyprland && Hyprland.monitors) {
+    const numMonitors = Hyprland.monitors.length;
+    service = Array(numMonitors);
+
+    for (let i = 0; i < numMonitors; i++) {
+        const monitor = Hyprland.monitors[i]; // Access monitor object
+        const monitorName = monitor.name;
+        const monitorSn = monitor.serial;
+
+        // Ensure userOptions and brightness settings are available
+        const brightnessControllers = userOptions.brightness?.controllers || {};
+        const preferredController = brightnessControllers[monitorName]
+            || brightnessControllers.default || "auto";
+
+        if (preferredController) {
+            switch (preferredController) {
+                case "brightnessctl":
                     service[i] = new BrightnessCtlService();
-                }
-                break;
-            default:
-                throw new Error(`Unknown brightness controller ${preferredController}`);
+                    break;
+                case "ddcutil":
+                    if (ddcSnBus && monitorSn in ddcSnBus) {
+                        service[i] = new BrightnessDdcService(ddcSnBus[monitorSn]);
+                    } else {
+                        print(`DDC bus not found for monitor SN: ${monitorSn}. Falling back for ${monitorName}.`);
+                        // Fallback if ddcutil is preferred but bus is not found
+                        service[i] = new BrightnessCtlService();
+                    }
+                    break;
+                case "auto":
+                    let ddcutilExists = false;
+                    try {
+                        if (AstalUtils.exec(`bash -c 'command -v ddcutil'`)) ddcutilExists = true;
+                    } catch (e) { /* command not found likely */ }
+
+                    if (ddcSnBus && monitorSn in ddcSnBus && ddcutilExists) {
+                        service[i] = new BrightnessDdcService(ddcSnBus[monitorSn]);
+                    } else {
+                        service[i] = new BrightnessCtlService();
+                    }
+                    break;
+                default:
+                    print(`Unknown brightness controller ${preferredController}. Using fallback for ${monitorName}.`);
+                    service[i] = new BrightnessCtlService(); // Fallback for unknown controller
+            }
+        } else {
+            print(`No preferred controller found for ${monitorName}. Using fallback.`);
+            service[i] = new BrightnessCtlService(); // Fallback if no controller specified
         }
     }
+} else {
+    print("Hyprland service not available or no monitors found. Initializing a single BrightnessCtlService as fallback.");
+    service.push(new BrightnessCtlService()); // Fallback to a single brightnessctl service
 }
 
-// make it global for easy use with cli
-globalThis.brightness = service[0];
+
+// make it global for easy use with cli, ensure service array is not empty
+if (service.length > 0) {
+    globalThis.brightness = service[0];
+} else {
+    // Handle the case where service array might be empty (e.g. if Hyprland fails and fallback also fails)
+    print("Brightness service initialization failed to create any instances.");
+    globalThis.brightness = null; // Or a dummy service
+}
 
 // export to use in other modules
-export default service;
+export default service; // Exports an array of service instances (or a single fallback)

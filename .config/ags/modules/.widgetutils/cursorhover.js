@@ -1,5 +1,6 @@
-// Cursor names reference: https://docs.gtk.org/gdk4/ctor.Cursor.new_from_name.html
-const { Gdk } = imports.gi;
+// Cursor names reference: https://docs.gtk.org/gdk3/ctor.Cursor.new_from_name.html (assuming Gtk3/Gdk3 for ags v1 context)
+// For Gtk4/Gdk4: https://docs.gtk.org/gdk4/ctor.Cursor.new_from_name.html
+import Gdk from 'gi://Gdk';
 
 export function setupCursorHover(button, cursorName = 'pointer') { // Hand pointing cursor on hover
     const display = Gdk.Display.get_default();

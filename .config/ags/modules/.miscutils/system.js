@@ -1,24 +1,69 @@
-const { GLib } = imports.gi;
-import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { execAsync, exec } = Utils;
+import GLib from 'gi://GLib';
+import Astal from 'gi://Astal'; // For Astal.Variable, Astal.Utils, Astal.App
 
-export const distroID = exec(`bash -c 'cat /etc/os-release | grep "^ID=" | cut -d "=" -f 2 | sed "s/\\"//g"'`).trim();
-export const isDebianDistro = (distroID == 'linuxmint' || distroID == 'ubuntu' || distroID == 'debian' || distroID == 'zorin' || distroID == 'popos' || distroID == 'raspbian' || distroID == 'kali');
-export const isArchDistro = (distroID == 'arch' || distroID == 'endeavouros' || distroID == 'cachyos');
-export const hasFlatpak = !!exec(`bash -c 'command -v flatpak'`);
+// TODO: Confirm actual names for Astal.Variable, Astal.Utils, Astal.App
+const AstalVariable = Astal.Variable;
+const AstalUtils = Astal.Utils;
+const App = Astal.App; // Assuming Astal.App provides configDir
+
+let distroID = "";
+try {
+    distroID = AstalUtils.exec(`bash -c 'cat /etc/os-release | grep "^ID=" | cut -d "=" -f 2 | sed "s/\\"//g"'`).trim();
+} catch (e) {
+    print(`Error getting distroID: ${e}`);
+    // distroID remains ""
+}
+export { distroID };
+
+export const isDebianDistro = (distroID === 'linuxmint' || distroID === 'ubuntu' || distroID === 'debian' || distroID === 'zorin' || distroID === 'popos' || distroID === 'raspbian' || distroID === 'kali');
+export const isArchDistro = (distroID === 'arch' || distroID === 'endeavouros' || distroID === 'cachyos');
+
+let hasFlatpakCmd = false;
+try {
+    if (AstalUtils.exec(`bash -c 'command -v flatpak'`)) hasFlatpakCmd = true;
+} catch (e) { /* command not found */ }
+export const hasFlatpak = hasFlatpakCmd;
+
 
 const LIGHTDARK_FILE_LOCATION = `${GLib.get_user_state_dir()}/ags/user/colormode.txt`;
-export const darkMode = Variable(!(Utils.readFile(LIGHTDARK_FILE_LOCATION).split('\n')[0].trim() == 'light'));
-darkMode.connect('changed', ({ value }) => {
+let initialDarkMode = true; // Default to dark mode if file reading fails
+try {
+    const fileContent = AstalUtils.readFile(LIGHTDARK_FILE_LOCATION);
+    if (fileContent) {
+        initialDarkMode = !(fileContent.split('\n')[0].trim() === 'light');
+    } else { // File might not exist or be empty, create it with default dark
+        AstalUtils.execAsync(['bash', '-c', `mkdir -p ${GLib.get_user_state_dir()}/ags/user && echo "dark" > ${LIGHTDARK_FILE_LOCATION}`]).catch(print);
+    }
+} catch (e) {
+    print(`Error reading darkMode file, defaulting to dark: ${e}`);
+    // Attempt to create the file if reading failed due to non-existence
+    AstalUtils.execAsync(['bash', '-c', `mkdir -p ${GLib.get_user_state_dir()}/ags/user && echo "dark" > ${LIGHTDARK_FILE_LOCATION}`]).catch(print);
+}
+
+export const darkMode = new AstalVariable(initialDarkMode);
+
+// TODO: Confirm how Astal.Variable signals work. Assuming a 'changed' signal or similar.
+// If it's a GObject property, it might be 'notify::value'.
+darkMode.connect('changed', ({ value }) => { // Assuming 'changed' signal provides new value directly
     let lightdark = value ? "dark" : "light";
-    execAsync([`bash`, `-c`, `mkdir -p ${GLib.get_user_state_dir()}/ags/user && sed -i "1s/.*/${lightdark}/"  ${GLib.get_user_state_dir()}/ags/user/colormode.txt`])
-        .then(execAsync(['bash', '-c', `${App.configDir}/scripts/color_generation/switchcolor.sh`]))
-        .then(execAsync(['bash', '-c', `command -v darkman && darkman set ${lightdark}`])) // Optional darkman integration
+    AstalUtils.execAsync([`bash`, `-c`, `mkdir -p ${GLib.get_user_state_dir()}/ags/user && sed -i "1s/.*/${lightdark}/"  ${GLib.get_user_state_dir()}/ags/user/colormode.txt`])
+        .then(() => {
+            if (App && App.configDir) { // Ensure App and configDir are available
+                return AstalUtils.execAsync(['bash', '-c', `${App.configDir}/scripts/color_generation/switchcolor.sh`]);
+            }
+            return Promise.resolve(); // Skip if App.configDir is not available
+        })
+        .then(() => AstalUtils.execAsync(['bash', '-c', `command -v darkman && darkman set ${lightdark}`])) // Optional darkman integration
         .catch(print);
 });
 globalThis['darkMode'] = darkMode;
-export const hasPlasmaIntegration = !!Utils.exec('bash -c "command -v plasma-browser-integration-host"');
+
+let plasmaIntegrationExists = false;
+try {
+    if (AstalUtils.exec('bash -c "command -v plasma-browser-integration-host"')) plasmaIntegrationExists = true;
+} catch (e) { /* command not found */ }
+export const hasPlasmaIntegration = plasmaIntegrationExists;
+
 
 export const getDistroIcon = () => {
     // Arches

@@ -1,4 +1,4 @@
-const { Gdk } = imports.gi;
+import Gdk from 'gi://Gdk';
 
 const MODS = {
     'shift': Gdk.ModifierType.SHIFT_MASK,

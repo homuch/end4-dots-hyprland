@@ -1,4 +1,6 @@
-const { Gio, GLib, Gtk } = imports.gi;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+// Gtk was imported but not used.
 
 export function fileExists(filePath) {
     let file = Gio.File.new_for_path(filePath);

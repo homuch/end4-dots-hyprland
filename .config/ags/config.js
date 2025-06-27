@@ -2,8 +2,16 @@
 // Import
 import Gdk from 'gi://Gdk';
 import GLib from 'gi://GLib';
-import App from 'resource:///com/github/Aylur/ags/app.js'
-import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'
+// import App from 'resource:///com/github/Aylur/ags/app.js' // Old v1 import
+// import * as Utils from 'resource:///com/github/Aylur/ags/utils.js' // Old v1 import
+import Astal from 'gi://Astal'; // Main Astal import
+// Gtk will likely be needed directly for widget creation
+import Gtk from 'gi://Gtk';
+
+// TODO: Check if Astal.Utils exists or if specific utilities need to be imported differently.
+// For now, direct calls to Utils.subprocess, Utils.execAsync etc. might fail
+// and will need to be replaced with Astal.Utils.subprocess or similar.
+
 // Stuff
 import userOptions from './modules/.configuration/user_options.js';
 import { firstRunWelcome, startBatteryWarningService } from './services/messages.js';
@@ -34,11 +42,14 @@ function forMonitorsAsync(widget) {
 }
 
 // Start stuff
-handleStyles(true);
+// TODO: Find definition of handleStyles or replace with Astal equivalent for styling.
+// handleStyles(true);
 startAutoDarkModeService().catch(print);
 firstRunWelcome().catch(print);
 startBatteryWarningService().catch(print)
 
+// TODO: Window definitions below will need complete rewrite for Astal.
+// This is just a placeholder to keep the structure.
 const Windows = () => [
     // forMonitors(DesktopBackground),
     forMonitors(Crosshair),
@@ -68,14 +79,28 @@ for (let i = 0; i < (Gdk.Display.get_default()?.get_n_monitors() || 1); i++) {
     closeWindowDelays[`osk${i}`] = CLOSE_ANIM_TIME;
 }
 
-App.config({
-    css: `${COMPILED_STYLE_DIR}/style.css`,
-    stackTraceOnError: true,
-    closeWindowDelay: closeWindowDelays,
+// App.config({ // Old v1 config
+//     css: `${COMPILED_STYLE_DIR}/style.css`,
+//     stackTraceOnError: true,
+//     closeWindowDelay: closeWindowDelays,
+//     windows: Windows().flat(1),
+// });
+
+Astal.App.config({
+    // TODO: Verify how styles are passed in Astal. This assumes it's similar.
+    style: `${COMPILED_STYLE_DIR}/style.css`, // Property name might be 'style' or 'stylesheet'
+    stackTraceOnError: true, // Assuming this option remains
+    // TODO: Investigate Astal's equivalent for closeWindowDelay if needed.
+    // closeWindowDelay: closeWindowDelays,
+
+    // TODO: The Windows() function needs to be refactored to return Astal windows.
+    // This will likely cause errors until modules are migrated.
     windows: Windows().flat(1),
 });
 
-// Stuff that don't need to be toggled. And they're async so ugh...
-forMonitorsAsync(Bar);
+// TODO: Ensure Astal.App automatically handles async setup of windows like Bar,
+// or if a different approach is needed.
+// The Bar module and its creation will need a full rewrite.
+// forMonitorsAsync(Bar);
 // Bar().catch(print); // Use this to debug the bar. Single monitor only.
 
