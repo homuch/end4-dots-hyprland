@@ -1,5 +1,4 @@
 import Gtk from 'gi://Gtk?version=4.0';
-import { box, label, revealer, button, icon as AgsIcon } from 'ags/widgets';
 import { createState, createEffect } from 'ags';
 // Placeholder for a single Notification widget (as used in popups or lists)
 

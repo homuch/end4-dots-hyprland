@@ -1,6 +1,5 @@
 import Gtk from 'gi://Gtk?version=4.0';
-import App from 'ags/app';
-import { window as AgsWindow, eventbox, box } from 'ags/widgets';
+import app from 'ags/gtk4/app';
 
 import Indicator from '../../services/indicatorService.js'; // Fake service, for popup method
 import IndicatorValuesDisplay from './IndicatorValuesDisplay.js';

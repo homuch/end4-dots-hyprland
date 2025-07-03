@@ -1,6 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
-import App from 'ags/app';
+import app from 'ags/gtk4/app';
 import { box, button, label, icon as AgsIcon, eventbox, revealer, stack } from 'ags/widgets';
 import { createState, createEffect, createBinding, Utils, createPoll } from 'ags';
 import { execAsync } from 'ags/process';

@@ -2,7 +2,7 @@ import { app } from 'ags/gtk4/app'; // Corrected
 import { Astal, Gtk, Gdk, GLib } from 'ags/gtk4'; // Corrected, added GLib
 // Intrinsics: <window>, <box>, <revealer>, <button>, <icon>, <overlay>
 import Applications from 'ags/service/applications';
-import Hyprland from 'ags/service/hyprland'; // Corrected
+import Hyprland from 'gi://AstalHyprland';
 import { createEffect, createState, createBinding, Utils } from 'ags'; // Utils for GLib.timeout_add
 import { execAsync } from 'ags/process';
 

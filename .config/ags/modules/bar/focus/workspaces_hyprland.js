@@ -7,7 +7,7 @@ import App from 'resource:///com/github/Aylur/ags/app.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 const { Box, DrawingArea, EventBox } = Widget;
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
+import Hyprland from 'gi://AstalHyprland';
 
 const dummyWs = Box({ className: 'bar-ws-focus' }); // Not shown. Only for getting size props
 const dummyActiveWs = Box({ className: 'bar-ws-focus bar-ws-focus-active' }); // Not shown. Only for getting size props

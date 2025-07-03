@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk'; // For Gdk.ModifierType
-import App from 'ags/app';
-import { box, label, revealer, entry as AgsEntry } from 'ags/widgets'; // AgsEntry for Gtk.Entry
+import app from 'ags/gtk4/app';
 import { Applications, Hyprland } from '../../../services/placeholderServices.js'; // Placeholders
 // TODO: Import real services:
 // import Applications from 'ags/service/applications';
@@ -206,7 +205,7 @@ export default function SearchAndWindowsDisplay() {
         ],
         setup: (self) => {
             // Clear search when overview is closed
-            App.connect('window-toggled', (app, name, visible) => {
+            app.connect('window-toggled', (_app, name, visible) => { // _app since app is already in scope
                 if (name.startsWith('overview') && !visible) { // Assuming overview windows are named overview, overview0, etc.
                     setSearchText('');
                 }

@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk'; // Added Gdk import
-import App from 'ags/app';
-import { window as AgsWindow, icon as AgsIcon } from 'ags/widgets';
+import app from 'ags/gtk4/app';
 import { options as userOptions } from '../../options.js';
 import { enableClickthrough } from '../../utils/clickthrough.js';
 

@@ -1,6 +1,5 @@
 import Gtk from 'gi://Gtk?version=4.0'; // Not strictly needed here but good practice for widget files
-import App from 'ags/app'; // For App.toggleWindow etc. if needed inside, though usually controlled externally
-import { window as AgsWindow } from 'ags/widgets';
+import app from 'ags/gtk4/app'; // For App.toggleWindow etc. if needed inside, though usually controlled externally
 import { options as userOptions } from '../../options.js'; // For default visibility or other options
 import { enableClickthrough } from '../../utils/clickthrough.js';
 import RoundedCorner from '../common/RoundedCorner.js'; // Migrated
@@ -52,7 +51,7 @@ export default function ScreenCornerWindow({
 
 // Global logic for handling fakeScreenRounding option 2 (fullscreen behavior)
 // This should be initialized once in app.js or a dedicated service.
-import Hyprland from 'ags/service/hyprland'; // Corrected
+import Hyprland from 'gi://AstalHyprland';
 import { Gdk } from 'ags/gtk4'; // Corrected Gdk import for Display
 
 export function manageFullscreenCorners() {
@@ -87,9 +86,9 @@ export function manageFullscreenCorners() {
                         // Convert eventData to boolean-like check
                         const isFullscreen = (eventData === '1' || eventData === 1 || String(eventData).toLowerCase() === "true");
                         if (isFullscreen) {
-                            App.closeWindow(windowName);
+                        app.closeWindow(windowName);
                         } else {
-                            if(monitorId < numMonitors) App.openWindow(windowName);
+                        if(monitorId < numMonitors) app.openWindow(windowName);
                         }
                     });
                 }

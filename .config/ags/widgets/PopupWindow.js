@@ -1,12 +1,11 @@
-import App from 'ags/app';
+import app from 'ags/gtk4/app';
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
-import { window as AgsWindow, box as AgsBox } from 'ags/widgets'; // Assuming intrinsic names
 
 // Placeholder for closeEverything. For now, assumes closing the current window.
 // This might need to be a more sophisticated App-level function if it closes more than just this window.
 function closeThisWindow(windowName) {
-    App.closeWindow(windowName);
+    app.closeWindow(windowName);
 }
 
 export function PopupWindow({
@@ -71,7 +70,7 @@ export function PopupWindow({
                 contentBox.remove_css_class(showClassName); // Ensure show is not active
                 contentBox.add_css_class(hideClassName);   // Ensure hide is active
 
-                App.connect('window-toggled', (app, windowName, visible) => {
+                app.connect('window-toggled', (_app, windowName, visible) => { // _app as app is already in scope
                     if (windowName === name) {
                         if (visible) {
                             contentBox.remove_css_class(hideClassName);

@@ -1,6 +1,5 @@
 import Gtk from 'gi://Gtk?version=4.0';
-import App from 'ags/app'; // For App.closeWindow if needed by ClickCloseRegion directly
-import { box } from 'ags/widgets';
+import app from 'ags/gtk4/app'; // For App.closeWindow if needed by ClickCloseRegion directly
 import { PopupWindow } from './PopupWindow.js'; // Migrated
 import ClickCloseRegion from './common/ClickCloseRegion.js'; // Migrated
 import SearchAndWindowsDisplay from './overview/SearchAndWindowsDisplay.js'; // Migrated

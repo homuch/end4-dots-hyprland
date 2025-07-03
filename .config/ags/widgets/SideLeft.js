@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
-import App from 'ags/app';
-import { box, button, label, entry as AgsEntry, eventbox, revealer, stack } from 'ags/widgets';
+import app from 'ags/gtk4/app';
 import { createState, createEffect, createBinding, Utils } from 'ags';
 import { execAsync } from 'ags/process';
 
@@ -22,7 +21,7 @@ import ToolBoxDisplay from './sideleft/Toolbox.js';
 const chatEntryRef = { widget: null, grab_focus: () => chatEntryRef.widget?.grab_focus() };
 
 const getString = (str) => str; // i18n placeholder
-const AGS_CONFIG_FILE = `${App.configDir}/user_options.jsonc`;
+const AGS_CONFIG_FILE = `${app.configDir}/user_options.jsonc`;
 
 
 const SIDEBARTABS_CONFIG = [ // Based on userOptions.sidebar.pages.order
@@ -73,7 +72,7 @@ const SideLeftContent = () => {
                 const option = 'sidebar.pages.defaultPage';
                 updateNestedProperty(userOptions, option, pageName); // Update in-memory options
                 execAsync([
-                    'python', `${App.configDir}/scripts/ags/agsconfigurator.py`,
+                    'python', `${app.configDir}/scripts/ags/agsconfigurator.py`,
                     '--key', option, '--value', pageName, '--file', AGS_CONFIG_FILE
                 ]).catch(print);
             }

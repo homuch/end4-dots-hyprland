@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
-import App from 'ags/app';
-import { box, label, button, revealer, eventbox, overlay } from 'ags/widgets';
+import app from 'ags/gtk4/app';
 import { createState, createEffect, Utils } from 'ags'; // Utils for execAsync if not from ags/process
 import { execAsync } from 'ags/process';
 
@@ -19,7 +18,7 @@ const getString = (str) => str; // TODO: i18n
 // Or just close the specific one. The original used closeWindowOnAllMonitors('session').
 // For now, assume each session window is named session<id>.
 function closeSessionWindow(monitorId) {
-    App.closeWindow(`session${monitorId}`);
+    app.closeWindow(`session${monitorId}`);
 }
 
 

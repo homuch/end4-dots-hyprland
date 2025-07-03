@@ -9,7 +9,7 @@ import Variable from 'resource:///com/github/Aylur/ags/variable.js';
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
+import Hyprland from 'gi://AstalHyprland';
 const { execAsync, exec } = Utils;
 import { setupCursorHoverGrab } from '../.widgetutils/cursorhover.js';
 import { dumpToWorkspace, swapWorkspace } from "./actions.js";
