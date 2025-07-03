@@ -1,4 +1,4 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import { SearchAndWindows } from "./windowcontent.js";
 import PopupWindow from '../.widgethacks/popupwindow.js';
 import { clickCloseRegion } from '../.commonwidgets/clickcloseregion.js';
@@ -10,11 +10,11 @@ export default (id = '') => PopupWindow({
     visible: false,
     anchor: ['top', 'bottom', 'left', 'right'],
     layer: 'top',
-    child: Widget.Box({
+    child: box({
         vertical: true,
         children: [
             clickCloseRegion({ name: 'overview', multimonitor: false, expand: false }),
-            Widget.Box({
+            box({
                 children: [
                     clickCloseRegion({ name: 'overview', multimonitor: false }),
                     SearchAndWindows(),

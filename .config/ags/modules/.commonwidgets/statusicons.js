@@ -5,7 +5,7 @@ import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
 import { MaterialIcon } from './materialicon.js';
 import Bluetooth from 'resource:///com/github/Aylur/ags/service/bluetooth.js';
-import Network from 'resource:///com/github/Aylur/ags/service/network.js';
+import Network from 'gi://AstalNetwork';
 import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
 import { languages } from './statusicons_languages.js';
 

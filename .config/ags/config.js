@@ -2,7 +2,7 @@
 // Import
 import Gdk from 'gi://Gdk';
 import GLib from 'gi://GLib';
-import App from 'resource:///com/github/Aylur/ags/app.js'
+import app from 'ags/gtk4/app';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'
 // Stuff
 import userOptions from './modules/.configuration/user_options.js';
@@ -74,8 +74,9 @@ App.config({
     closeWindowDelay: closeWindowDelays,
     windows: Windows().flat(1),
 });
+*/ // Commenting out the App.config call as app.js should be the entry point
 
 // Stuff that don't need to be toggled. And they're async so ugh...
-forMonitorsAsync(Bar);
+// forMonitorsAsync(Bar); // Also comment out things that depend on this config
 // Bar().catch(print); // Use this to debug the bar. Single monitor only.
 

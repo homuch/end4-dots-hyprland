@@ -1,10 +1,10 @@
 const { Gio, GLib } = imports.gi;
 import GtkSource from "gi://GtkSource?version=3.0";
-import App from 'resource:///com/github/Aylur/ags/app.js'
+import app from 'ags/gtk4/app'; // Corrected App import
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'
 import { darkMode } from './modules/.miscutils/system.js';
 
-const CUSTOM_SOURCEVIEW_SCHEME_PATH = `${App.configDir}/assets/themes/sourceviewtheme${darkMode.value ? '' : '-light'}.xml`;
+const CUSTOM_SOURCEVIEW_SCHEME_PATH = `${app.configDir}/assets/themes/sourceviewtheme${darkMode.value ? '' : '-light'}.xml`; // Corrected to app
 
 export const COMPILED_STYLE_DIR = `${GLib.get_user_cache_dir()}/ags/user/generated`
 
@@ -42,9 +42,9 @@ globalThis['handleStyles'] = (resetMusic) => {
     // Compile and apply
     async function applyStyle() {
         Utils.exec(`mkdir -p ${COMPILED_STYLE_DIR}`);
-        Utils.exec(`sass -I "${GLib.get_user_state_dir()}/ags/scss" -I "${App.configDir}/scss/fallback" "${App.configDir}/scss/main.scss" "${COMPILED_STYLE_DIR}/style.css"`);
-        App.resetCss();
-        App.applyCss(`${COMPILED_STYLE_DIR}/style.css`);
+        Utils.exec(`sass -I "${GLib.get_user_state_dir()}/ags/scss" -I "${app.configDir}/scss/fallback" "${app.configDir}/scss/main.scss" "${COMPILED_STYLE_DIR}/style.css"`); // Corrected to app
+        app.resetCss(); // Corrected to app
+        app.applyCss(`${COMPILED_STYLE_DIR}/style.css`); // Corrected to app
         console.log('[LOG] Styles loaded')
     }
     applyStyle().then(() => {

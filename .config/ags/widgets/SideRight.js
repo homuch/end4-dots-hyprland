@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
 import app from 'ags/gtk4/app';
-import { box, button, label, icon as AgsIcon, eventbox, revealer, stack } from 'ags/widgets';
 import { createState, createEffect, createBinding, Utils, createPoll } from 'ags';
 import { execAsync } from 'ags/process';
 
@@ -69,7 +68,7 @@ const TimeRow = () => {
     return box({
         className: 'spacing-h-10 sidebar-group-invisible-morehorizpad', // Ensure SCSS
         children: [
-            AgsIcon({ icon: getDistroIcon(), className: 'txt txt-larger' }), // Ensure SCSS
+            icon({ icon: getDistroIcon(), className: 'txt txt-larger' }), // Ensure SCSS
             uptimeLabel,
             box({ hexpand: true }), // Spacer
             ModuleReloadIcon({ hpack: 'end' }),

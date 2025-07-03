@@ -15,16 +15,16 @@ import { enableClickthrough } from '../../utils/clickthrough.js';
 // }
 
 export default function CrosshairWindow({ monitor = 0 } = {}) {
-    return AgsWindow({
+    return window({
         monitor,
         name: `crosshair${monitor}`,
         layer: Gtk.LayerShellLayer.OVERLAY, // Use Gtk enum for layer
         anchor: ['top', 'left', 'right', 'bottom'], // To make it a fullscreen overlay
         exclusivity: 'ignore', // Gtk.LayerShellLayerExclusivity
         visible: false, // Initially hidden, toggled by other logic
-        child: AgsIcon({
+        child: icon({
             // className is applied to the Gtk widget itself.
-            // If AgsIcon is a simple GtkImage or GtkIcon, this works.
+            // If icon is a simple GtkImage or GtkIcon, this works.
             // If it's a box around an icon, the class might need to be on the inner icon.
             // Assuming AgsIcon itself can take className for styling the icon.
             className: 'crosshair-icon-widget',

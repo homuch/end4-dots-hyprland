@@ -7,7 +7,7 @@ import { createPoll, createBinding, createEffect, createState } from 'ags';
 import { options as userOptions } from '../../options.js';
 import { setupCursorHover } from '../../utils/cursorHover.js';
 import { WWO_CODE, WEATHER_SYMBOL, NIGHT_WEATHER_SYMBOL } from '../../utils/weatherData.js';
-import Battery from 'ags/service/battery'; // Corrected import
+import Battery from 'gi://AstalBattery';
 import Indicator from '../../services/indicatorService.js';
 import Audio from 'ags/service/audio';
 

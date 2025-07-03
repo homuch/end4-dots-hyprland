@@ -1,6 +1,6 @@
 const { Gio, GLib } = imports.gi;
 import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // Removed
 import { ConfigToggle, ConfigMulipleSelection } from '../.commonwidgets/configwidgets.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync } = Utils;
@@ -12,11 +12,11 @@ import { darkMode } from '../.miscutils/system.js';
 const ColorBox = ({
     name = 'Color',
     ...rest
-}) => Widget.Box({
+}) => box({ // Changed from Widget.Box
     ...rest,
     homogeneous: true,
     children: [
-        Widget.Label({
+        label({ // Changed from Widget.Label
             label: `${name}`,
         })
     ]
@@ -24,7 +24,7 @@ const ColorBox = ({
 
 const ColorSchemeSettingsRevealer = () => {
     const headerButtonIcon = MaterialIcon('expand_more', 'norm');
-    const header = Widget.Button({
+    const header = button({ // Changed from Widget.Button
         className: 'osd-settings-btn-arrow',
         onClicked: () => {
             content.revealChild = !content.revealChild;
@@ -34,7 +34,7 @@ const ColorSchemeSettingsRevealer = () => {
         hpack: 'end',
         child: headerButtonIcon,
     });
-    const content = Widget.Revealer({
+    const content = revealer({ // Changed from Widget.Revealer
         revealChild: false,
         transition: 'slide_down',
         transitionDuration: 200,
@@ -49,14 +49,14 @@ const ColorSchemeSettingsRevealer = () => {
             }
         }),
     });
-    return Widget.EventBox({
+    return eventBox({ // Changed from Widget.EventBox
         onHover: (self) => {
             isHoveredColorschemeSettings.setValue(true);
         },
         onHoverLost: (self) => {
             isHoveredColorschemeSettings.setValue(false);
         },
-        child: Widget.Box({
+        child: box({ // Changed from Widget.Box
             vertical: true,
             children: [
                 header,
@@ -103,15 +103,15 @@ const initTransparencyVal = (initTransparency == "transparent") ? 1 : 0;
 const initScheme = Utils.exec(`bash -c "sed -n \'3p\' ${LIGHTDARK_FILE_LOCATION}"`);
 const initSchemeIndex = calculateSchemeInitIndex(schemeOptionsArr, initScheme);
 
-const ColorSchemeSettings = () => Widget.Box({
+const ColorSchemeSettings = () => box({ // Changed from Widget.Box
     className: 'osd-colorscheme-settings spacing-v-5 margin-20',
     vertical: true,
     vpack: 'center',
     children: [
-        Widget.Box({
+        box({ // Changed from Widget.Box
             vertical: true,
             children: [
-                Widget.Label({
+                label({ // Changed from Widget.Label
                     xalign: 0,
                     className: 'txt-norm titlefont txt',
                     label: getString('Options'),
@@ -138,17 +138,17 @@ const ColorSchemeSettings = () => Widget.Box({
                     onChange: (self, newValue) => {
                         let transparency = newValue == 0 ? "opaque" : "transparent";
                         execAsync([`bash`, `-c`, `mkdir -p ${GLib.get_user_state_dir()}/ags/user && sed -i "2s/.*/${transparency}/"  ${GLib.get_user_state_dir()}/ags/user/colormode.txt`])
-                            .then(execAsync(['bash', '-c', `${App.configDir}/scripts/color_generation/switchcolor.sh`]))
+                            .then(execAsync(['bash', '-c', `${app.configDir}/scripts/color_generation/switchcolor.sh`]))
                             .catch(print);
                     },
                 }),
             ]
         }),
-        Widget.Box({
+        box({ // Changed from Widget.Box
             vertical: true,
             className: 'spacing-v-5',
             children: [
-                Widget.Label({
+                label({ // Changed from Widget.Label
                     xalign: 0,
                     className: 'txt-norm titlefont txt margin-top-5',
                     label: getString('Scheme styles'),
@@ -171,18 +171,18 @@ const ColorSchemeSettings = () => Widget.Box({
     ]
 });
 
-const ColorschemeContent = () => Widget.Box({
+const ColorschemeContent = () => box({ // Changed from Widget.Box
     className: 'osd-colorscheme spacing-v-5',
     vertical: true,
     hpack: 'center',
     children: [
-        Widget.Label({
+        label({ // Changed from Widget.Label
             xalign: 0,
             className: 'txt-norm titlefont txt',
             label: getString('Color scheme'),
             hpack: 'center',
         }),
-        Widget.Box({
+        box({ // Changed from Widget.Box
             className: 'spacing-h-5',
             hpack: 'center',
             children: [
@@ -194,7 +194,7 @@ const ColorschemeContent = () => Widget.Box({
                 ColorBox({ name: 'E', className: 'osd-color osd-color-error' }),
             ]
         }),
-        Widget.Box({
+        box({ // Changed from Widget.Box
             className: 'spacing-h-5',
             hpack: 'center',
             children: [
@@ -212,7 +212,7 @@ const ColorschemeContent = () => Widget.Box({
 
 const isHoveredColorschemeSettings = Variable(false);
 
-export default () => Widget.Revealer({
+export default () => revealer({ // Changed from Widget.Revealer
     transition: 'slide_down',
     transitionDuration: userOptions.animations.durationLarge,
     child: ColorschemeContent(),

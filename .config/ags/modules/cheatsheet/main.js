@@ -1,4 +1,4 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import { setupCursorHover } from "../.widgetutils/cursorhover.js";
 import PopupWindow from '../.widgethacks/popupwindow.js';
 import Keybinds from "./keybinds.js";
@@ -20,34 +20,34 @@ const cheatsheets = [
     },
 ];
 
-const CheatsheetHeader = () => Widget.CenterBox({
+const CheatsheetHeader = () => centerBox({
     vertical: false,
-    startWidget: Widget.Box({}),
-    centerWidget: Widget.Box({
+    startWidget: box({}),
+    centerWidget: box({
         vertical: true,
         className: "spacing-h-15",
         children: [
-            Widget.Box({
+            box({
                 hpack: 'center',
                 className: 'spacing-h-5 cheatsheet-title',
                 children: [
-                    Widget.Label({
+                    label({
                         hpack: 'center',
                         css: 'margin-right: 0.682rem;',
                         className: 'txt-title',
                         label: getString('Cheat sheet'),
                     }),
-                    Widget.Label({
+                    label({
                         vpack: 'center',
                         className: "cheatsheet-key txt-small",
                         label: "󰖳",
                     }),
-                    Widget.Label({
+                    label({
                         vpack: 'center',
                         className: "cheatsheet-key-notkey txt-small",
                         label: "+",
                     }),
-                    Widget.Label({
+                    label({
                         vpack: 'center',
                         className: "cheatsheet-key txt-small",
                         label: "/",
@@ -56,14 +56,14 @@ const CheatsheetHeader = () => Widget.CenterBox({
             }),
         ]
     }),
-    endWidget: Widget.Button({
+    endWidget: button({
         vpack: 'start',
         hpack: 'end',
         className: "cheatsheet-closebtn icon-material txt txt-hugeass",
         onClicked: () => {
             closeWindowOnAllMonitors('cheatsheet');
         },
-        child: Widget.Label({
+        child: label({
             className: 'icon-material txt txt-hugeass',
             label: 'close'
         }),
@@ -89,7 +89,7 @@ const SheetContent = (id) => {
 
 export default (id) => {
     const sheets = SheetContent(id);
-    const widgetContent = Widget.Box({
+    const widgetContent = box({
         vertical: true,
         className: "cheatsheet-bg spacing-v-5",
         children: [
@@ -104,11 +104,11 @@ export default (id) => {
         keymode: 'on-demand',
         visible: false,
         anchor: ['top', 'bottom', 'left', 'right'],
-        child: Widget.Box({
+        child: box({
             vertical: true,
             children: [
                 clickCloseRegion({ name: 'cheatsheet' }),
-                Widget.Box({
+                box({
                     children: [
                         clickCloseRegion({ name: 'cheatsheet' }),
                         widgetContent,

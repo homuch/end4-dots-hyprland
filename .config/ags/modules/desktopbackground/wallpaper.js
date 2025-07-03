@@ -1,9 +1,10 @@
 const { Gdk, GdkPixbuf, Gio, GLib, Gtk } = imports.gi;
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Added app import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { exec, execAsync } = Utils;
-const { Box, Button, Label, Stack } = Widget;
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
+// const { Box, Button, Label, Stack } = Widget; // To be removed
+import Hyprland from 'gi://AstalHyprland'; // Corrected Hyprland import
 
 import Wallpaper from '../../services/wallpaper.js';
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
@@ -12,14 +13,14 @@ import { monitors } from '../.commondata/hyprlanddata.js';
 
 const DISABLE_AGS_WALLPAPER = true;
 
-const SWITCHWALL_SCRIPT_PATH = `${App.configDir}/scripts/color_generation/switchwall.sh`;
+const SWITCHWALL_SCRIPT_PATH = `${app.configDir}/scripts/color_generation/switchwall.sh`;
 const WALLPAPER_ZOOM_SCALE = 1.25; // For scrolling when we switch workspace
 const MAX_WORKSPACES = 10;
 
 export default (monitor = 0) => {
     const WALLPAPER_OFFSCREEN_X = (WALLPAPER_ZOOM_SCALE - 1) * monitors[monitor].width;
     const WALLPAPER_OFFSCREEN_Y = (WALLPAPER_ZOOM_SCALE - 1) * monitors[monitor].height;
-    const wallpaperImage = Widget.DrawingArea({
+    const wallpaperImage = drawingArea({
         attribute: {
             pixbuf: undefined,
             workspace: 1,
@@ -74,19 +75,19 @@ export default (monitor = 0) => {
         }
         ,
     });
-    const wallpaperPrompt = Box({
+    const wallpaperPrompt = box({
         hpack: 'center',
         vpack: 'center',
         vertical: true,
         className: 'spacing-v-10',
         children: [
-            Label({
+            label({
                 hpack: 'center',
                 justification: 'center',
                 className: 'txt-large',
                 label: `No wallpaper loaded.\nAn image ≥ ${monitors[monitor].width * WALLPAPER_ZOOM_SCALE} × ${monitors[monitor].height * WALLPAPER_ZOOM_SCALE} is recommended.`,
             }),
-            Button({
+            button({
                 hpack: 'center',
                 className: 'btn-primary',
                 label: `Select one`,
@@ -95,11 +96,11 @@ export default (monitor = 0) => {
             }),
         ]
     });
-    const stack = Stack({
+    const stack = stack({
         transition: 'crossfade',
         transitionDuration: userOptions.animations.durationLarge,
         children: {
-            'disabled': Box({}),
+            'disabled': box({}),
             'image': wallpaperImage,
             'prompt': wallpaperPrompt,
         },

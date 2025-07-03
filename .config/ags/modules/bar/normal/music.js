@@ -1,8 +1,8 @@
 const { GLib } = imports.gi;
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // No longer needed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
-const { Box, Button, EventBox, Label, Overlay, Revealer } = Widget;
+// const { Box, Button, EventBox, Label, Overlay, Revealer } = Widget; // No longer needed
 const { execAsync, exec } = Utils;
 import { AnimatedCircProg } from "../../.commonwidgets/cairo_circularprogress.js";
 import { MaterialIcon } from '../../.commonwidgets/materialicon.js';
@@ -33,10 +33,10 @@ function adjustVolume(direction) {
 }
 
 
-const BarGroup = ({ child }) => Box({
+const BarGroup = ({ child }) => box({
     className: 'bar-group-margin bar-sides',
     children: [
-        Box({
+        box({
             className: `bar-group${userOptions.appearance.borderless ? '-borderless' : ''} bar-group-standalone bar-group-pad-system`,
             children: [child],
         }),
@@ -49,10 +49,10 @@ const BarResource = (name, icon, command, circprogClassName = `bar-batt-circprog
         vpack: 'center',
         hpack: 'center',
     });
-    const resourceProgress = Box({
+    const resourceProgress = box({
         homogeneous: true,
-        children: [Overlay({
-            child: Box({
+        children: [overlay({
+            child: box({
                 vpack: 'center',
                 className: `${iconClassName}`,
                 homogeneous: true,
@@ -63,12 +63,12 @@ const BarResource = (name, icon, command, circprogClassName = `bar-batt-circprog
             overlays: [resourceCircProg]
         })]
     });
-    const resourceLabel = Label({
+    const resourceLabel = label({
         className: `txt-smallie ${textClassName}`,
     });
-    const widget = Button({
+    const widget = button({
         onClicked: () => Utils.execAsync(['bash', '-c', `${userOptions.apps.taskManager}`]).catch(print),
-        child: Box({
+        child: box({
             className: `spacing-h-4 ${textClassName}`,
             children: [
                 resourceProgress,
@@ -117,14 +117,14 @@ const switchToRelativeWorkspace = async (self, num) => {
 
 export default () => {
     // TODO: use cairo to make button bounce smaller on click, if that's possible
-    const playingState = Box({ // Wrap a box cuz overlay can't have margins itself
+    const playingState = box({ // Wrap a box cuz overlay can't have margins itself
         homogeneous: true,
-        children: [Overlay({
-            child: Box({
+        children: [overlay({
+            child: box({
                 vpack: 'center',
                 className: 'bar-music-playstate',
                 homogeneous: true,
-                children: [Label({
+                children: [label({
                     vpack: 'center',
                     className: 'bar-music-playstate-txt',
                     justification: 'center',
@@ -145,7 +145,7 @@ export default () => {
             ]
         })]
     });
-    const trackTitle = Label({
+    const trackTitle = label({
         hexpand: true,
         className: 'txt-smallie bar-music-txt',
         truncate: 'end',
@@ -158,7 +158,7 @@ export default () => {
                 label.label = getString('No media');
         }),
     })
-    const musicStuff = Box({
+    const musicStuff = box({
         className: 'spacing-h-10',
         hexpand: true,
         children: [
@@ -171,8 +171,8 @@ export default () => {
         if (GLib.file_test(CUSTOM_MODULE_CONTENT_SCRIPT, GLib.FileTest.EXISTS)) {
             const interval = Number(Utils.readFile(CUSTOM_MODULE_CONTENT_INTERVAL_FILE)) || 5000;
             return BarGroup({
-                child: Button({
-                    child: Label({
+                child: button({
+                    child: label({
                         className: 'txt-smallie txt-onSurfaceVariant',
                         useMarkup: true,
                         setup: (self) => Utils.timeout(1, () => {
@@ -191,15 +191,15 @@ export default () => {
                 })
             });
         } else return BarGroup({
-            child: Box({
+            child: box({
                 children: [
                     BarResource(getString('RAM Usage'), 'memory', `LANG=C free | awk '/^Mem/ {printf("%.2f\\n", ($3/$2) * 100)}'`,
                         `bar-ram-circprog ${userOptions.appearance.borderless ? 'bar-ram-circprog-borderless' : ''}`, 'bar-ram-txt', 'bar-ram-icon'),
-                    Revealer({
+                    revealer({
                         revealChild: true,
                         transition: 'slide_left',
                         transitionDuration: userOptions.animations.durationLarge,
-                        child: Box({
+                        child: box({
                             className: 'spacing-h-10 margin-left-10',
                             children: [
                                 BarResource(getString('Swap Usage'), 'swap_horiz', `LANG=C free | awk '/^Swap/ {if ($2 > 0) printf("%.2f\\n", ($3/$2) * 100); else print "0";}'`,
@@ -217,14 +217,14 @@ export default () => {
             })
         });
     }
-    return EventBox({
+    return eventBox({
         onScrollUp: () => adjustVolume('up'),
         onScrollDown: () => adjustVolume('down'),
-        child: Box({
+        child: box({
             className: 'spacing-h-4',
             children: [
                 SystemResourcesOrCustomModule(),
-                EventBox({
+                eventBox({
                     child: BarGroup({ child: musicStuff }),
                     onPrimaryClick: () => showMusicControls.setValue(!showMusicControls.value),
                     onSecondaryClick: () => execAsync(['bash', '-c', 'playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"` &']).catch(print),

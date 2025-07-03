@@ -1,8 +1,8 @@
 const { Gdk } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Corrected App import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { Box, Button, EventBox, Label, Revealer, Scrollable, Stack } = Widget;
+// const { Box, Button, EventBox, Label, Revealer, Scrollable, Stack } = Widget; // To be removed
 const { execAsync, exec } = Utils;
 import { MaterialIcon } from '../.commonwidgets/materialicon.js';
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
@@ -13,7 +13,7 @@ import { TabContainer } from '../.commonwidgets/tabcontainer.js';
 import { checkKeybind } from '../.widgetutils/keybind.js';
 import { updateNestedProperty } from '../.miscutils/objects.js';
 
-const AGS_CONFIG_FILE = `${App.configDir}/user_options.jsonc`;
+const AGS_CONFIG_FILE = `${app.configDir}/user_options.jsonc`; // Corrected to app
 
 const SIDEBARTABS = {
     'apis': {
@@ -64,7 +64,7 @@ const CONTENTS = userOptions.sidebar.pages.order.map((tabName) => SIDEBARTABS[ta
 //     },
 // })
 
-const expandButton = Button({
+const expandButton = button({ // Corrected
     attribute: {
         'enabled': false,
         'toggle': (self) => {
@@ -93,7 +93,7 @@ export const widgetContent = TabContainer({
         const pageName = CONTENTS[index].name;
         const option = 'sidebar.pages.defaultPage';
         updateNestedProperty(userOptions, option, pageName);
-        execAsync(['bash', '-c', `${App.configDir}/scripts/ags/agsconfigurator.py \
+        execAsync(['bash', '-c', `${app.configDir}/scripts/ags/agsconfigurator.py \
             --key ${option} \
             --value ${pageName} \
             --file ${AGS_CONFIG_FILE}`
@@ -106,7 +106,7 @@ export const widgetContent = TabContainer({
 });
 
 export default () => {
-    return Box({
+    return box({ // Corrected
         // vertical: true,
         vexpand: true,
         css: 'min-width: 2px;',

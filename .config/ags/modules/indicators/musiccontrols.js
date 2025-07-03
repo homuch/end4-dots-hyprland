@@ -1,10 +1,10 @@
 const { GLib } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Corrected App import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
+import Mpris from 'ags/service/mpris'; // Corrected Mpris import
 const { exec, execAsync } = Utils;
-const { Box, EventBox, Icon, Scrollable, Label, Button, Revealer } = Widget;
+// const { Box, EventBox, Icon, Scrollable, Label, Button, Revealer } = Widget; // To be removed
 
 import { fileExists } from '../.miscutils/files.js';
 import { AnimatedCircProg } from "../.commonwidgets/cairo_circularprogress.js";
@@ -80,7 +80,7 @@ const TrackProgress = ({ player, ...rest }) => {
         // Set circular progress (see definition of AnimatedCircProg for explanation)
         circprog.css = `font-size: ${Math.max(player.position / player.length * 100, 0)}px;`
     }
-    return AnimatedCircProg({
+    return AnimatedCircProg({ // This is an imported component, not a direct widget call
         ...rest,
         className: 'osd-music-circprog',
         vpack: 'center',
@@ -91,7 +91,7 @@ const TrackProgress = ({ player, ...rest }) => {
     })
 }
 
-const TrackTitle = ({ player, ...rest }) => Label({
+const TrackTitle = ({ player, ...rest }) => label({ // Changed to lowercase
     ...rest,
     label: 'No music playing',
     xalign: 0,
@@ -107,7 +107,7 @@ const TrackTitle = ({ player, ...rest }) => Label({
     }, 'notify::track-title'),
 });
 
-const TrackArtists = ({ player, ...rest }) => Label({
+const TrackArtists = ({ player, ...rest }) => label({ // Changed to lowercase
     ...rest,
     xalign: 0,
     className: 'osd-music-artists',
@@ -118,17 +118,17 @@ const TrackArtists = ({ player, ...rest }) => Label({
 })
 
 const CoverArt = ({ player, ...rest }) => {
-    const fallbackCoverArt = Box({ // Fallback
+    const fallbackCoverArt = box({ // Fallback
         className: 'osd-music-cover-fallback',
         homogeneous: true,
-        children: [Label({
+        children: [label({ // Changed to lowercase
             className: 'icon-material txt-gigantic txt-thin',
             label: 'music_note',
         })]
     });
     // const coverArtDrawingArea = Widget.DrawingArea({ className: 'osd-music-cover-art' });
     // const coverArtDrawingAreaStyleContext = coverArtDrawingArea.get_style_context();
-    const realCoverArt = Box({
+    const realCoverArt = box({ // Changed to lowercase
         className: 'osd-music-cover-art',
         homogeneous: true,
         // children: [coverArtDrawingArea],
@@ -201,28 +201,28 @@ const CoverArt = ({ player, ...rest }) => {
                 if (fileExists(stylePath)) {
                     // self.attribute.showImage(self, coverPath)
                     self.css = `background-image: url('${coverPath}');`; // CSS image
-                    App.applyCss(stylePath);
+                    app.applyCss(stylePath); // Corrected to app
                     return;
                 }
 
                 // Generate colors
                 execAsync(['bash', '-c',
-                    `${App.configDir}/scripts/color_generation/generate_colors_material.py --path '${coverPath}' --mode ${darkMode.value ? 'dark' : 'light'} > ${GLib.get_user_state_dir()}/ags/scss/_musicmaterial.scss`])
+                    `${app.configDir}/scripts/color_generation/generate_colors_material.py --path '${coverPath}' --mode ${darkMode.value ? 'dark' : 'light'} > ${GLib.get_user_state_dir()}/ags/scss/_musicmaterial.scss`]) // Corrected to app
                     .then(() => {
                         const dominantColor = `#${Utils.exec(`sh -c "magick '${coverPath}' -scale 1x1\\! -format '%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]' info: | sed 's/,/\\n/g' | xargs -L 1 printf '%02x' ; echo"`)}`
-                        // exec(`${App.configDir}/scripts/color_generation/pywal.sh -i "${player.coverPath}" -n -t -s -e -q ${darkMode.value ? '' : '-l'}`)
+                        // exec(`${app.configDir}/scripts/color_generation/pywal.sh -i "${player.coverPath}" -n -t -s -e -q ${darkMode.value ? '' : '-l'}`) // Corrected to app
                         // exec(`cp ${GLib.get_user_cache_dir()}/wal/colors.scss ${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss`);
-                        exec(`cp '${App.configDir}/scripts/templates/wal/_musicwal.scss' '${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss'`);
+                        exec(`cp '${app.configDir}/scripts/templates/wal/_musicwal.scss' '${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss'`); // Corrected to app
                         exec(`sed -i 's/{{dominantColor}}/${dominantColor}/g' '${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss'`)
                         exec(`sed -i 's/{{backgroundColor}}/${darkMode.value ? "#0E1415" : "#EEF4F4"}/g' '${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss'`)
                         exec(`sed -i 's/{{foregroundColor}}/${darkMode.value ? "#EEF4F4" : "#0E1415"}/g' '${GLib.get_user_state_dir()}/ags/scss/_musicwal.scss'`)
 
-                        exec(`sass -I "${GLib.get_user_state_dir()}/ags/scss" -I "${App.configDir}/scss/fallback" "${App.configDir}/scss/_music.scss" "${stylePath}"`);
+                        exec(`sass -I "${GLib.get_user_state_dir()}/ags/scss" -I "${app.configDir}/scss/fallback" "${app.configDir}/scss/_music.scss" "${stylePath}"`); // Corrected to app
                         Utils.timeout(200, () => {
                             // self.attribute.showImage(self, coverPath)
                             self.css = `background-image: url('${coverPath}');`; // CSS image
                         });
-                        App.applyCss(`${stylePath}`);
+                        app.applyCss(`${stylePath}`); // Corrected to app
                     })
                     .catch(print);
             },
@@ -233,11 +233,11 @@ const CoverArt = ({ player, ...rest }) => {
             }, 'notify::cover-path')
         ,
     });
-    return Box({
+    return box({ // Changed to lowercase
         ...rest,
         className: 'osd-music-cover',
         children: [
-            Widget.Overlay({
+            overlay({ // Changed to lowercase
                 child: fallbackCoverArt,
                 overlays: [realCoverArt],
             })
@@ -245,28 +245,28 @@ const CoverArt = ({ player, ...rest }) => {
     })
 }
 
-const TrackControls = ({ player, ...rest }) => Widget.Revealer({
+const TrackControls = ({ player, ...rest }) => revealer({ // Changed to lowercase
     revealChild: false,
     transition: 'slide_right',
     transitionDuration: userOptions.animations.durationLarge,
-    child: Widget.Box({
+    child: box({ // Changed to lowercase
         ...rest,
         vpack: 'center',
         className: 'osd-music-controls spacing-h-3',
         children: [
-            Button({
+            button({ // Changed to lowercase
                 className: 'osd-music-controlbtn',
                 onClicked: () => player.previous(),
-                child: Label({
+                child: label({ // Changed to lowercase
                     className: 'icon-material osd-music-controlbtn-txt',
                     label: 'skip_previous',
                 }),
                 setup: setupCursorHover
             }),
-            Button({
+            button({ // Changed to lowercase
                 className: 'osd-music-controlbtn',
                 onClicked: () => player.next(),
-                child: Label({
+                child: label({ // Changed to lowercase
                     className: 'icon-material osd-music-controlbtn-txt',
                     label: 'skip_next',
                 }),
@@ -283,16 +283,16 @@ const TrackControls = ({ player, ...rest }) => Widget.Revealer({
     }, 'notify::play-back-status'),
 });
 
-const TrackSource = ({ player, ...rest }) => Widget.Revealer({
+const TrackSource = ({ player, ...rest }) => revealer({ // Changed to lowercase
     revealChild: false,
     transition: 'slide_left',
     transitionDuration: userOptions.animations.durationLarge,
-    child: Widget.Box({
+    child: box({ // Changed to lowercase
         ...rest,
         className: 'osd-music-pill spacing-h-5',
         homogeneous: true,
         children: [
-            Label({
+            label({ // Changed to lowercase
                 hpack: 'fill',
                 justification: 'center',
                 className: 'icon-nerd',
@@ -312,24 +312,24 @@ const TrackSource = ({ player, ...rest }) => Widget.Revealer({
 });
 
 const TrackTime = ({ player, ...rest }) => {
-    return Widget.Revealer({
+    return revealer({ // Changed to lowercase
         revealChild: false,
         transition: 'slide_left',
         transitionDuration: userOptions.animations.durationLarge,
-        child: Widget.Box({
+        child: box({ // Changed to lowercase
             ...rest,
             vpack: 'center',
             className: 'osd-music-pill spacing-h-5',
             children: [
-                Label({
+                label({ // Changed to lowercase
                     setup: (self) => self.poll(1000, (self) => {
                         // const player = Mpris.getPlayer();
                         if (!player) return;
                         self.label = lengthStr(player.position);
                     }),
                 }),
-                Label({ label: '/' }),
-                Label({
+                label({ label: '/' }), // Changed to lowercase
+                label({ // Changed to lowercase
                     setup: (self) => self.hook(Mpris, (self) => {
                         // const player = Mpris.getPlayer();
                         if (!player) return;
@@ -348,15 +348,15 @@ const TrackTime = ({ player, ...rest }) => {
 const PlayState = ({ player }) => {
     var position = 0;
     const trackCircProg = TrackProgress({ player: player });
-    return Widget.Button({
+    return button({ // Changed to lowercase
         className: 'osd-music-playstate',
-        child: Widget.Overlay({
+        child: overlay({ // Changed to lowercase
             child: trackCircProg,
             overlays: [
-                Widget.Button({
+                button({ // Changed to lowercase
                     className: 'osd-music-playstate-btn',
                     onClicked: () => player.playPause(),
-                    child: Widget.Label({
+                    child: label({ // Changed to lowercase
                         justification: 'center',
                         hpack: 'fill',
                         vpack: 'center',
@@ -372,15 +372,15 @@ const PlayState = ({ player }) => {
     });
 }
 
-const MusicControlsWidget = (player) => Box({
+const MusicControlsWidget = (player) => box({ // Changed to lowercase
     className: 'osd-music spacing-h-20 test',
     children: [
         CoverArt({ player: player, vpack: 'center' }),
-        Box({
+        box({ // Changed to lowercase
             vertical: true,
             className: 'spacing-v-5 osd-music-info',
             children: [
-                Box({
+                box({ // Changed to lowercase
                     vertical: true,
                     vpack: 'center',
                     hexpand: true,
@@ -389,8 +389,8 @@ const MusicControlsWidget = (player) => Box({
                         TrackArtists({ player: player }),
                     ]
                 }),
-                Box({ vexpand: true }),
-                Box({
+                box({ vexpand: true }), // Changed to lowercase
+                box({ // Changed to lowercase
                     className: 'spacing-h-10',
                     setup: (box) => {
                         box.pack_start(TrackControls({ player: player }), false, false, 0);
@@ -404,11 +404,11 @@ const MusicControlsWidget = (player) => Box({
     ]
 })
 
-export default () => Revealer({
+export default () => revealer({ // Changed to lowercase
     transition: 'slide_down',
     transitionDuration: userOptions.animations.durationLarge,
     revealChild: false,
-    child: Box({
+    child: box({ // Changed to lowercase
         children: Mpris.bind("players")
             .as(players => players.map((player) => (isRealPlayer(player) ? MusicControlsWidget(player) : null)))
     }),

@@ -1,13 +1,13 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { Box, Button, Label, Revealer } = Widget;
+// const { Box, Button, Label, Revealer } = Widget; // To be removed
 import { MaterialIcon } from '../.commonwidgets/materialicon.js';
 import { TabContainer } from '../.commonwidgets/tabcontainer.js';
 import Todo from "../../services/todo.js";
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
 
 const TodoListItem = (task, id, isDone, isEven = false) => {
-    const taskName = Widget.Label({
+    const taskName = label({ // Corrected
         hexpand: true,
         xalign: 0,
         wrap: true,
@@ -15,11 +15,11 @@ const TodoListItem = (task, id, isDone, isEven = false) => {
         label: task.content,
         selectable: true,
     });
-    const actions = Box({
+    const actions = box({ // Corrected
         hpack: 'end',
         className: 'spacing-h-5 sidebar-todo-actions',
         children: [
-            Widget.Button({ // Check/Uncheck
+            button({ // Corrected
                 vpack: 'center',
                 className: 'txt sidebar-todo-item-action',
                 child: MaterialIcon(`${isDone ? 'remove_done' : 'check'}`, 'norm', { vpack: 'center' }),
@@ -39,7 +39,7 @@ const TodoListItem = (task, id, isDone, isEven = false) => {
                 },
                 setup: setupCursorHover,
             }),
-            Widget.Button({ // Remove
+            button({ // Corrected
                 vpack: 'center',
                 className: 'txt sidebar-todo-item-action',
                 child: MaterialIcon('delete_forever', 'norm', { vpack: 'center' }),
@@ -58,13 +58,13 @@ const TodoListItem = (task, id, isDone, isEven = false) => {
             }),
         ]
     })
-    const crosser = Widget.Box({
+    const crosser = box({ // Corrected
         className: 'sidebar-todo-crosser',
     });
-    const todoContent = Widget.Box({
+    const todoContent = box({ // Corrected
         className: 'sidebar-todo-item spacing-h-5',
         children: [
-            Widget.Box({
+            box({ // Corrected
                 vertical: true,
                 children: [
                     taskName,
@@ -74,22 +74,22 @@ const TodoListItem = (task, id, isDone, isEven = false) => {
             crosser,
         ]
     });
-    const widgetRevealer = Widget.Revealer({
+    const widgetRevealer = revealer({ // Corrected
         revealChild: true,
         transition: 'slide_down',
         transitionDuration: userOptions.animations.durationLarge,
         child: todoContent,
     })
-    return Box({
+    return box({ // Corrected
         homogeneous: true,
         children: [widgetRevealer]
     });
 }
 
-const todoItems = (isDone) => Widget.Scrollable({
+const todoItems = (isDone) => scrollable({ // Corrected
     hscroll: 'never',
     vscroll: 'automatic',
-    child: Widget.Box({
+    child: box({ // Corrected
         vertical: true,
         className: 'spacing-v-5',
         setup: (self) => self
@@ -101,14 +101,14 @@ const todoItems = (isDone) => Widget.Scrollable({
                 if (self.children.length == 0) {
                     self.homogeneous = true;
                     self.children = [
-                        Widget.Box({
+                        box({ // Corrected
                             hexpand: true,
                             vertical: true,
                             vpack: 'center',
                             className: 'txt txt-subtext',
                             children: [
                                 MaterialIcon(`${isDone ? 'checklist' : 'check_circle'}`, 'gigantic'),
-                                Label({ label: `${isDone ? getString('Finished tasks will go here') : getString('Nothing here!')}` })
+                                label({ label: `${isDone ? getString('Finished tasks will go here') : getString('Nothing here!')}` }) // Corrected
                             ]
                         })
                     ]
@@ -124,11 +124,11 @@ const todoItems = (isDone) => Widget.Scrollable({
 });
 
 const UndoneTodoList = () => {
-    const newTaskButton = Revealer({
+    const newTaskButton = revealer({ // Corrected
         transition: 'slide_left',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: true,
-        child: Button({
+        child: button({ // Corrected
             className: 'txt-small sidebar-todo-new',
             halign: 'end',
             vpack: 'center',
@@ -143,11 +143,11 @@ const UndoneTodoList = () => {
             }
         })
     });
-    const cancelAddTask = Revealer({
+    const cancelAddTask = revealer({ // Corrected
         transition: 'slide_right',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: false,
-        child: Button({
+        child: button({ // Corrected
             className: 'txt-norm icon-material sidebar-todo-add',
             halign: 'end',
             vpack: 'center',
@@ -162,7 +162,7 @@ const UndoneTodoList = () => {
             }
         })
     });
-    const newTaskEntry = Widget.Entry({
+    const newTaskEntry = entry({ // Corrected
         // hexpand: true,
         vpack: 'center',
         className: 'txt-small sidebar-todo-entry',
@@ -174,17 +174,17 @@ const UndoneTodoList = () => {
         },
         onChange: ({ text }) => confirmAddTask.child.toggleClassName('sidebar-todo-add-available', text != ''),
     });
-    const newTaskEntryRevealer = Revealer({
+    const newTaskEntryRevealer = revealer({ // Corrected
         transition: 'slide_right',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: false,
         child: newTaskEntry,
     });
-    const confirmAddTask = Revealer({
+    const confirmAddTask = revealer({ // Corrected
         transition: 'slide_right',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: false,
-        child: Button({
+        child: button({ // Corrected
             className: 'txt-norm icon-material sidebar-todo-add',
             halign: 'end',
             vpack: 'center',
@@ -197,12 +197,12 @@ const UndoneTodoList = () => {
             }
         })
     });
-    return Box({ // The list, with a New button
+    return box({ // Corrected // The list, with a New button
         vertical: true,
         className: 'spacing-v-5',
-        setup: (box) => {
-            box.pack_start(todoItems(false), true, true, 0);
-            box.pack_start(Box({
+        setup: (boxWidget) => { // box renamed to boxWidget
+            boxWidget.pack_start(todoItems(false), true, true, 0);
+            boxWidget.pack_start(box({ // Corrected
                 setup: (self) => {
                     self.pack_start(cancelAddTask, false, false, 0);
                     self.pack_start(newTaskEntryRevealer, true, true, 0);
@@ -214,7 +214,7 @@ const UndoneTodoList = () => {
     });
 }
 
-export const TodoWidget = () => TabContainer({
+export const TodoWidget = () => TabContainer({ // This is an imported component
     icons: ['format_list_bulleted', 'task_alt'],
     names: [getString('Unfinished'), getString('Done')],
     children: [

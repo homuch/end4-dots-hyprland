@@ -1,5 +1,4 @@
 import Gtk from 'gi://Gtk?version=4.0';
-import { box, button, eventbox, label, stack } from 'ags/widgets';
 import { createState, createEffect, createBinding } from 'ags';
 import { options as userOptions } from '../../options.js';
 import { setupCursorHover } from '../../utils/cursorHover.js';

@@ -1,18 +1,18 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 
 import WallpaperImage from './wallpaper.js';
 import TimeAndLaunchesWidget from './timeandlaunches.js'
 import SystemWidget from './system.js'
 
-export default (monitor) => Widget.Window({
+export default (monitor) => window({
     name: `desktopbackground${monitor}`,
     // anchor: ['top', 'bottom', 'left', 'right'],
     layer: 'background',
     exclusivity: 'ignore',
     visible: true,
-    child: Widget.Overlay({
+    child: overlay({
         child: WallpaperImage(monitor),
-        // child: Widget.Box({}),
+        // child: box({}),
         overlays: [
             TimeAndLaunchesWidget(),
             SystemWidget(),

@@ -21,10 +21,10 @@ export function PopupWindow({
                            // but it was often passed in the example usage (e.g. Cheatsheet).
                            // If 'keymode' is an AGS Window prop, it can be passed in ...props.
                            // For GTK's modal behavior, it's `modal: true`.
-    ...props // Other Gtk.Window or Ags.Window properties
+    ...props // Other Gtk.Window or window properties
 }) {
     // The main child Box that will handle classes and keybinds
-    const contentBox = AgsBox({
+    const contentBox = box({
         // Set initial classes if provided. The hideClassName might be the default state.
         className: `${hideClassName || ''} ${showClassName || ''}`, // Start with both, hide will likely make it invisible
         children: children,
@@ -33,7 +33,7 @@ export function PopupWindow({
         // For an "Escape" key to close the window, it's common to put it on the window.
     });
 
-    const win = AgsWindow({
+    const win = window({
         name,
         visible: false, // Popups start hidden
         layer,
@@ -41,7 +41,7 @@ export function PopupWindow({
         exclusivity,
         ...props, // Spread other Gtk.Window props
         child: contentBox,
-        setup: (self) => { // self is the AgsWindow instance
+        setup: (self) => { // self is the window instance
             // Handle Escape key to close the window
             // Option 1: EventControllerKey (more GTK4 idiomatic)
             const controller = Gtk.EventControllerKey.new();
@@ -70,7 +70,7 @@ export function PopupWindow({
                 contentBox.remove_css_class(showClassName); // Ensure show is not active
                 contentBox.add_css_class(hideClassName);   // Ensure hide is active
 
-                app.connect('window-toggled', (_app, windowName, visible) => { // _app as app is already in scope
+                app.connect('window-toggled', (_app, windowName, visible) => { // _app because app is already in scope
                     if (windowName === name) {
                         if (visible) {
                             contentBox.remove_css_class(hideClassName);

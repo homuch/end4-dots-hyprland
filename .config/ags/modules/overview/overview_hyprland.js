@@ -4,9 +4,9 @@
 //
 const { Gdk, Gtk } = imports.gi;
 const { Gravity } = imports.gi.Gdk;
-import App from 'resource:///com/github/Aylur/ags/app.js';
+import app from 'ags/gtk4/app'; // Corrected App import
 import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
 import Hyprland from 'gi://AstalHyprland';
@@ -25,10 +25,10 @@ const overviewMonitor = Variable(0);
 
 export default () => {
     const clientMap = new Map();
-    const ContextMenuWorkspaceArray = ({ label, actionFunc, thisWorkspace }) => Widget.MenuItem({
+    const ContextMenuWorkspaceArray = ({ label, actionFunc, thisWorkspace }) => Gtk.MenuItem({ // Changed to Gtk.MenuItem
         label: `${label}`,
         setup: (menuItem) => {
-            let submenu = new Gtk.Menu();
+            let submenu = new Gtk.Menu(); // Already Gtk.Menu, which is fine
             submenu.className = 'menu';
 
             const offset = Math.floor((Hyprland.active.workspace.id - 1) / NUM_OF_WORKSPACES_SHOWN) * NUM_OF_WORKSPACES_SHOWN;
@@ -80,11 +80,11 @@ export default () => {
         // }) : MaterialIcon('terminal', 'gigantic', {
         //     css: `font-size: ${Math.min(w, h) * userOptions.overview.scale / 2.5}px`,
         // });
-        const appIcon = Widget.Icon({
+        const appIcon = icon({ // Changed to lowercase
             icon: iconName,
             size: Math.min(w, h) * userOptions.overview.scale / 2.5,
         });
-        return Widget.Button({
+        return button({ // Changed to lowercase
             attribute: {
                 address, x, y, w, h, ws: id,
                 updateIconSize: (self) => {
@@ -102,27 +102,27 @@ export default () => {
             `,
             onClicked: (self) => {
                 Hyprland.messageAsync(`dispatch focuswindow address:${address}`);
-                App.closeWindow('overview');
+                app.closeWindow('overview'); // Corrected to app
             },
             onMiddleClickRelease: () => Hyprland.messageAsync(`dispatch closewindow address:${address}`),
             onSecondaryClick: (button) => {
                 button.toggleClassName('overview-tasks-window-selected', true);
-                const menu = Widget.Menu({
+                const menu = new Gtk.Menu({ // Changed to Gtk.Menu constructor
                     className: 'menu',
-                    children: [
-                        Widget.MenuItem({
-                            child: Widget.Label({
+                    children: [ // Children of Gtk.Menu are Gtk.MenuItems
+                        Gtk.MenuItem({ // Changed to Gtk.MenuItem
+                            child: label({ // Changed to lowercase
                                 xalign: 0,
                                 label: "Close (Middle-click)",
                             }),
                             onActivate: () => Hyprland.messageAsync(`dispatch closewindow address:${address}`),
                         }),
-                        ContextMenuWorkspaceArray({
+                        ContextMenuWorkspaceArray({ // This is a local function returning Gtk.MenuItem
                             label: "Dump windows to workspace",
                             actionFunc: dumpToWorkspace,
                             thisWorkspace: Number(id)
                         }),
-                        ContextMenuWorkspaceArray({
+                        ContextMenuWorkspaceArray({ // This is a local function returning Gtk.MenuItem
                             label: "Swap windows with workspace",
                             actionFunc: swapWorkspace,
                             thisWorkspace: Number(id)
@@ -132,27 +132,27 @@ export default () => {
                 menu.connect("deactivate", () => {
                     button.toggleClassName('overview-tasks-window-selected', false);
                 })
-                menu.connect("selection-done", () => {
+                menu.connect("selection-done", () => { // selection-done is Gtk3, Gtk4 uses 'hide' or 'deactivate'
                     button.toggleClassName('overview-tasks-window-selected', false);
                 })
                 menu.popup_at_widget(button.get_parent(), Gravity.SOUTH, Gravity.NORTH, null); // Show menu below the button
                 button.connect("destroy", () => menu.destroy());
             },
-            child: Widget.Box({
+            child: box({ // Changed to lowercase
                 homogeneous: true,
-                child: Widget.Box({
+                child: box({ // Changed to lowercase
                     vertical: true,
                     vpack: 'center',
                     children: [
                         appIcon,
                         // TODO: Add xwayland tag instead of just having italics
-                        Widget.Revealer({
+                        revealer({ // Changed to lowercase
                             transition: 'slide_right',
                             revealChild: revealInfoCondition,
-                            child: Widget.Revealer({
+                            child: revealer({ // Changed to lowercase
                                 transition: 'slide_down',
                                 revealChild: revealInfoCondition,
-                                child: Widget.Label({
+                                child: label({ // Changed to lowercase
                                     maxWidthChars: 1, // Doesn't matter what number
                                     truncate: 'end',
                                     className: `margin-top-5 ${xwayland ? 'txt txt-italic' : 'txt'}`,
@@ -197,7 +197,7 @@ export default () => {
         //         },
         //     }
         // });
-        const fixed = Widget.Box({
+        const fixed = box({ // Changed to lowercase
             attribute: {
                 put: (widget, x, y) => {
                     if (!widget.attribute) return;
@@ -225,7 +225,7 @@ export default () => {
                 },
             }
         })
-        const WorkspaceNumber = ({ index, ...rest }) => Widget.Label({
+        const WorkspaceNumber = ({ index, ...rest }) => label({ // Changed to lowercase
             className: 'overview-tasks-workspace-number',
             label: `${index}`,
             css: overviewMonitor.bind().as(monitor => `
@@ -239,7 +239,7 @@ export default () => {
             }),
             ...rest,
         })
-        const widget = Widget.Box({
+        const widget = box({ // Changed to lowercase
             className: 'overview-tasks-workspace',
             vpack: 'center',
             // Rounding and adding 1px to minimum width/height to work around scaling inaccuracy:
@@ -247,11 +247,11 @@ export default () => {
                 min-width: ${1 + Math.round(monitors[monitor].width * userOptions.overview.scale)}px;
                 min-height: ${1 + Math.round(monitors[monitor].height * userOptions.overview.scale)}px;
             `),
-            children: [Widget.EventBox({
+            children: [eventBox({ // Changed to lowercase
                 hexpand: true,
                 onPrimaryClick: () => {
                     Hyprland.messageAsync(`dispatch workspace ${index}`);
-                    App.closeWindow('overview');
+                    app.closeWindow('overview'); // Corrected to app
                 },
                 setup: (eventbox) => {
                     eventbox.drag_dest_set(Gtk.DestDefaults.ALL, TARGET, Gdk.DragAction.COPY);
@@ -261,8 +261,8 @@ export default () => {
                         overviewTick.setValue(!overviewTick.value);
                     });
                 },
-                child: Widget.Overlay({
-                    child: Widget.Box({}),
+                child: overlay({ // Changed to lowercase
+                    child: box({}), // Changed to lowercase
                     overlays: [
                         WorkspaceNumber({ index: index, hpack: 'start', vpack: 'start' }),
                         fixed
@@ -334,7 +334,7 @@ export default () => {
         return array;
     };
 
-    const OverviewRow = ({ startWorkspace, workspaces, windowName = 'overview' }) => Widget.Box({
+    const OverviewRow = ({ startWorkspace, workspaces, windowName = 'overview' }) => box({ // Changed to lowercase
         children: arr(startWorkspace, workspaces).map(Workspace),
         attribute: {
             workspaceGroup: Math.floor((Hyprland.active.workspace.id - 1) / NUM_OF_WORKSPACES_SHOWN),
@@ -412,12 +412,12 @@ export default () => {
                     const previousGroup = box.attribute.workspaceGroup;
                     const currentGroup = Math.floor((Hyprland.active.workspace.id - 1) / NUM_OF_WORKSPACES_SHOWN);
                     if (currentGroup !== previousGroup) {
-                        if (!App.getWindow(windowName) || !App.getWindow(windowName).visible) return;
+                        if (!app.getWindow(windowName) || !app.getWindow(windowName).visible) return; // Corrected to app
                         box.attribute.update(box);
                         box.attribute.workspaceGroup = currentGroup;
                     }
                 })
-                .hook(App, (box, name, visible) => { // Update on open
+                .hook(app, (box, name, visible) => { // Update on open // Corrected to app
                     if (name == 'overview' && visible) {
                         overviewMonitor.value = Hyprland.active.monitor.id;
                         box.attribute.update(box);
@@ -426,13 +426,13 @@ export default () => {
         },
     });
 
-    return Widget.Revealer({
+    return revealer({ // Changed to lowercase
         revealChild: true,
         // hpack to prevent unneeded expansion in overview-tasks-workspace:
         hpack: 'center',
         transition: 'slide_down',
         transitionDuration: userOptions.animations.durationLarge,
-        child: Widget.Box({
+        child: box({ // Changed to lowercase
             vertical: true,
             className: 'overview-tasks',
             children: Array.from({ length: userOptions.overview.numOfRows }, (_, index) =>

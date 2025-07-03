@@ -1,10 +1,10 @@
 const { Gtk } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Corrected App import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
-const { Box, EventBox, Button, Revealer } = Widget;
-const { execAsync } = Utils;
+// const { Box, EventBox, Button, Revealer } = Widget; // To be removed
+const { execAsync, exec } = Utils; // exec was used in startYdotoolIfNeeded
 import { MaterialIcon } from '../.commonwidgets/materialicon.js';
 import { DEFAULT_OSK_LAYOUT, oskLayouts } from './data_keyboardlayouts.js';
 import { setupCursorHoverGrab } from '../.widgetutils/cursorhover.js';
@@ -37,50 +37,50 @@ class ShiftMode {
 }
 var modsPressed = false;
 
-const TopDecor = () => Box({
+const TopDecor = () => box({
     vertical: true,
     children: [
-        Box({
+        box({
             hpack: 'center',
             className: 'osk-dragline',
             homogeneous: true,
-            children: [EventBox({
+            children: [eventBox({
                 setup: setupCursorHoverGrab,
             })]
         })
     ]
 });
 
-const KeyboardControlButton = (icon, text, runFunction) => Button({
+const KeyboardControlButton = (icon, text, runFunction) => button({
     className: 'osk-control-button spacing-h-10',
     onClicked: () => runFunction(),
-    child: Widget.Box({
+    child: box({
         children: [
             MaterialIcon(icon, 'norm'),
-            Widget.Label({
+            label({
                 label: `${text}`,
             }),
         ]
     })
 })
 
-const KeyboardControls = () => Box({
+const KeyboardControls = () => box({
     vertical: true,
     className: 'spacing-v-5',
     children: [
-        Button({
+        button({
             className: 'osk-control-button txt-norm icon-material',
             onClicked: () => {
                 releaseAllKeys();
-                toggleWindowOnAllMonitors('osk');
+                toggleWindowOnAllMonitors('osk'); // This global function uses App, ensure it's updated or app passed
             },
             label: 'keyboard_hide',
         }),
-        Button({
+        button({
             className: 'osk-control-button txt-norm',
             label: `${keyboardJson['name_short']}`,
         }),
-        Button({
+        button({
             className: 'osk-control-button txt-norm icon-material',
             onClicked: () => { // TODO: Proper clipboard widget, since fuzzel doesn't receive mouse inputs
                 execAsync([`bash`, `-c`, "pkill fuzzel || cliphist list | fuzzel  --match-mode fzf --dmenu | cliphist decode | wl-copy"]).catch(print);
@@ -95,14 +95,14 @@ var shiftButton;
 var rightShiftButton;
 var allButtons = [];
 const KeyboardItself = (kbJson) => {
-    return Box({
+    return box({
         vertical: true,
         className: 'spacing-v-5',
-        children: kbJson.keys.map(row => Box({
+        children: kbJson.keys.map(row => box({
             vertical: false,
             className: 'spacing-h-5',
             children: row.map(key => {
-                return Button({
+                return button({
                     className: `osk-key osk-key-${key.shape}`,
                     hexpand: ["space", "expand"].includes(key.shape),
                     label: key.label,
@@ -196,23 +196,23 @@ const KeyboardItself = (kbJson) => {
     })
 }
 
-const KeyboardWindow = () => Box({
+const KeyboardWindow = () => box({
     vexpand: true,
     hexpand: true,
     vertical: true,
     className: 'osk-window spacing-v-5',
     children: [
         TopDecor(),
-        Box({
+        box({
             className: 'osk-body spacing-h-10',
             children: [
                 KeyboardControls(),
-                Widget.Box({ className: 'separator-line' }),
+                box({ className: 'separator-line' }), // Corrected: Widget.Box to box
                 KeyboardItself(keyboardJson),
             ],
         })
     ],
-    setup: (self) => self.hook(App, (self, name, visible) => { // Update on open
+    setup: (self) => self.hook(app, (self, name, visible) => { // Update on open, Corrected to app
         if (!name) return;
         if (name.startsWith('osk') && visible) {
             self.setCss(`margin-bottom: -0px;`);
@@ -222,11 +222,11 @@ const KeyboardWindow = () => Box({
 
 export default ({ id }) => {
     const kbWindow = KeyboardWindow();
-    const gestureEvBox = EventBox({ child: kbWindow })
+    const gestureEvBox = eventBox({ child: kbWindow }) // Corrected to eventBox
     const gesture = Gtk.GestureDrag.new(gestureEvBox);
     gesture.connect('drag-begin', async () => {
         try {
-            const Hyprland = (await import('resource:///com/github/Aylur/ags/service/hyprland.js')).default;
+            const Hyprland = await import('gi://AstalHyprland'); // Corrected Hyprland import
             Hyprland.messageAsync('j/cursorpos').then((out) => {
                 gesture.startY = JSON.parse(out).y;
             }).catch(print);
@@ -236,7 +236,7 @@ export default ({ id }) => {
     });
     gesture.connect('drag-update', async () => {
         try {
-            const Hyprland = (await import('resource:///com/github/Aylur/ags/service/hyprland.js')).default;
+            const Hyprland = await import('gi://AstalHyprland'); // Corrected Hyprland import
             Hyprland.messageAsync('j/cursorpos').then((out) => {
                 const currentY = JSON.parse(out).y;
                 const offset = gesture.startY - currentY;
@@ -254,7 +254,7 @@ export default ({ id }) => {
     gesture.connect('drag-end', () => {
         var offset = gesture.get_offset()[2];
         if (offset > 50) {
-            App.closeWindow(`osk${id}`);
+            app.closeWindow(`osk${id}`); // Corrected to app
         }
         else {
             kbWindow.setCss(`

@@ -4,7 +4,7 @@ import { createEffect, createBinding, createState } from 'ags';
 import { options as userOptions } from '../../options.js';
 import { enableClickthrough } from '../../utils/clickthrough.js';
 import { shellModes } from '../../services/shellService.js';
-import Battery from 'ags/service/battery'; // Corrected import
+import Battery from 'gi://AstalBattery';
 
 // Migrated sub-modules
 import MusicDisplay from './MusicDisplay.js';

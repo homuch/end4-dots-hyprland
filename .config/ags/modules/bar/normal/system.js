@@ -1,10 +1,10 @@
 // This is for the right pills of the bar.
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // No longer needed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { Box, Label, Button, Overlay, Revealer, Scrollable, Stack, EventBox } = Widget;
+// const { Box, Label, Button, Overlay, Revealer, Scrollable, Stack, EventBox } = Widget; // No longer needed
 const { exec, execAsync } = Utils;
 const { GLib } = imports.gi;
-import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
+import Battery from 'gi://AstalBattery';
 import { MaterialIcon } from '../../.commonwidgets/materialicon.js';
 import { AnimatedCircProg } from "../../.commonwidgets/cairo_circularprogress.js";
 import { WWO_CODE, WEATHER_SYMBOL, NIGHT_WEATHER_SYMBOL } from '../../.commondata/weather.js';
@@ -43,26 +43,26 @@ const date = Variable('', {
     ],
 })
 
-const BarClock = () => Widget.Box({
+const BarClock = () => box({
     vpack: 'center',
     className: 'spacing-h-4 bar-clock-box',
     children: [
-        Widget.Label({
+        label({
             className: 'bar-time',
             label: time.bind(),
         }),
-        Widget.Label({
+        label({
             className: 'txt-norm txt-onLayer1',
             label: '•',
         }),
-        Widget.Label({
+        label({
             className: 'txt-smallie bar-date',
             label: date.bind(),
         }),
     ],
 });
 
-const UtilButton = ({ name, icon, onClicked }) => Button({
+const UtilButton = ({ name, icon, onClicked }) => button({
     vpack: 'center',
     tooltipText: name,
     onClicked: onClicked,
@@ -71,7 +71,7 @@ const UtilButton = ({ name, icon, onClicked }) => Button({
     setup: setupCursorHover
 })
 
-const Utilities = () => Box({
+const Utilities = () => box({
     hpack: 'center',
     className: 'spacing-h-4',
     children: [
@@ -94,10 +94,10 @@ const Utilities = () => Box({
     ]
 })
 
-const BarBattery = () => Box({
+const BarBattery = () => box({
     className: 'spacing-h-4 bar-batt-txt',
     children: [
-        Revealer({
+        revealer({
             transitionDuration: userOptions.animations.durationSmall,
             revealChild: false,
             transition: 'slide_right',
@@ -106,14 +106,14 @@ const BarBattery = () => Box({
                 self.revealChild = Battery.charging;
             }),
         }),
-        Label({
+        label({
             className: 'txt-smallie',
             setup: (self) => self.hook(Battery, label => {
                 label.label = `${Number.parseFloat(Battery.percent.toFixed(1))}%`;
             }),
         }),
-        Overlay({
-            child: Widget.Box({
+        overlay({
+            child: box({
                 vpack: 'center',
                 className: 'bar-batt',
                 homogeneous: true,
@@ -132,33 +132,33 @@ const BarBattery = () => Box({
     ]
 });
 
-const BarGroup = ({ child }) => Widget.Box({
+const BarGroup = ({ child }) => box({
     className: 'bar-group-margin bar-sides',
     children: [
-        Widget.Box({
+        box({
             className: `bar-group${userOptions.appearance.borderless ? '-borderless' : ''} bar-group-standalone bar-group-pad-system`,
             children: [child],
         }),
     ]
 });
-const BatteryModule = () => Stack({
+const BatteryModule = () => stack({
     transition: 'slide_up_down',
     transitionDuration: userOptions.animations.durationLarge,
     children: {
-        'laptop': Box({
+        'laptop': box({
             className: 'spacing-h-4', children: [
                 BarGroup({ child: Utilities() }),
                 BarGroup({ child: BarBattery() }),
             ]
         }),
         'desktop': BarGroup({
-            child: Box({
+            child: box({
                 hexpand: true,
                 hpack: 'center',
                 className: 'spacing-h-4 txt-onSurfaceVariant',
                 children: [
                     MaterialIcon('device_thermostat', 'small'),
-                    Label({
+                    label({
                         label: 'Weather',
                     })
                 ],
@@ -217,18 +217,19 @@ const BatteryModule = () => Stack({
 
 const switchToRelativeWorkspace = async (self, num) => {
     try {
-        const Hyprland = (await import('resource:///com/github/Aylur/ags/service/hyprland.js')).default;
+        const Hyprland = await import('gi://AstalHyprland'); // Corrected dynamic import
         Hyprland.messageAsync(`dispatch workspace r${num > 0 ? '+' : ''}${num}`).catch(print);
     } catch {
-        execAsync([`${App.configDir}/scripts/sway/swayToRelativeWs.sh`, `${num}`]).catch(print);
+        // Assuming 'app' is available globally or imported if this file becomes a module
+        execAsync([`${app.configDir}/scripts/sway/swayToRelativeWs.sh`, `${num}`]).catch(print);
     }
 }
 
-export default () => Widget.EventBox({
+export default () => eventBox({
     onScrollUp: (self) => switchToRelativeWorkspace(self, -1),
     onScrollDown: (self) => switchToRelativeWorkspace(self, +1),
     onPrimaryClick: () => App.toggleWindow('sideright'),
-    child: Widget.Box({
+    child: box({
         className: 'spacing-h-4',
         children: [
             BarGroup({ child: BarClock() }),

@@ -1,14 +1,15 @@
 import App from 'resource:///com/github/Aylur/ags/app.js';
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import Hyprland from 'gi://AstalHyprland';
 import Brightness from '../../../services/brightness.js';
 import Indicator from '../../../services/indicator.js';
 import { distance } from '../../.miscutils/mathfuncs.js';
 
 const OSD_DISMISS_DISTANCE = 10;
 
-const WindowTitle = async () => {
+const WindowTitle = () => { // No longer async as Hyprland is imported statically
     try {
-        const Hyprland = (await import('resource:///com/github/Aylur/ags/service/hyprland.js')).default;
+        // Hyprland is now imported at the top level
         return Widget.Scrollable({
             hexpand: true, vexpand: true,
             hscroll: 'automatic', vscroll: 'never',
@@ -47,8 +48,8 @@ const WindowTitle = async () => {
 }
 
 
-export default async (monitor = 0) => {
-    const optionalWindowTitleInstance = await WindowTitle();
+export default (monitor = 0) => { // No longer async
+    const optionalWindowTitleInstance = WindowTitle(); // No longer async
     let scrollCursorX, scrollCursorY;
     return Widget.EventBox({
         onScrollUp: (self, event) => {

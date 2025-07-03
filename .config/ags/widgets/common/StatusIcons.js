@@ -10,9 +10,9 @@ import { options as userOptions } from '../../options.js';
 
 import Audio from 'ags/service/audio';
 import Bluetooth from 'ags/service/bluetooth';
-import Network from 'ags/service/network';
+import Network from 'gi://AstalNetwork';
 import Notifications from 'ags/service/notifications';
-import Hyprland from 'ags/service/hyprland';
+import Hyprland from 'gi://AstalHyprland';
 
 const getString = (str) => str; // TODO: i18n
 

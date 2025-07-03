@@ -1,6 +1,6 @@
 const { Gtk } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Corrected App import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync, exec } = Utils;
 import { searchItem } from './searchitem.js';
@@ -16,45 +16,45 @@ export const NoResultButton = () => searchItem({
     },
 });
 
-export const DirectoryButton = ({ parentPath, name, type, icon }) => {
-    const actionText = Widget.Revealer({
+export const DirectoryButton = ({ parentPath, name, type, icon: fileIcon }) => { // icon renamed to fileIcon
+    const actionText = revealer({
         revealChild: false,
         transition: "crossfade",
         transitionDuration: userOptions.animations.durationLarge,
-        child: Widget.Label({
+        child: label({
             className: 'overview-search-results-txt txt txt-small txt-action',
             label: 'Open',
         })
     });
-    const actionTextRevealer = Widget.Revealer({
+    const actionTextRevealer = revealer({
         revealChild: false,
         transition: "slide_left",
         transitionDuration: userOptions.animations.durationSmall,
         child: actionText,
     });
-    return Widget.Button({
+    return button({
         className: 'overview-search-result-btn',
         onClicked: () => {
-            App.closeWindow('overview');
+            app.closeWindow('overview'); // app instead of App
             execAsync(['bash', '-c', `xdg-open '${parentPath}/${name}'`, `&`]).catch(print);
         },
-        child: Widget.Box({
+        child: box({
             children: [
-                Widget.Box({
+                box({
                     vertical: false,
                     children: [
-                        Widget.Box({
+                        box({
                             className: 'overview-search-results-icon',
                             homogeneous: true,
-                            child: Widget.Icon({
-                                icon: icon,
+                            child: icon({ // icon instead of Widget.Icon
+                                icon: fileIcon,
                             }),
                         }),
-                        Widget.Label({
+                        label({
                             className: 'overview-search-results-txt txt txt-norm',
                             label: name,
                         }),
-                        Widget.Box({ hexpand: true }),
+                        box({ hexpand: true }),
                         actionTextRevealer,
                     ]
                 })
@@ -79,50 +79,50 @@ export const CalculationResultButton = ({ result, text }) => searchItem({
     actionName: "Copy",
     content: `${result}`,
     onActivate: () => {
-        App.closeWindow('overview');
+        app.closeWindow('overview'); // Corrected
         execAsync(['wl-copy', `${result}`]).catch(print);
     },
 });
 
-export const DesktopEntryButton = (app) => {
-    const actionText = Widget.Revealer({
+export const DesktopEntryButton = (appEntry) => { // app renamed to appEntry
+    const actionText = revealer({ // Corrected
         revealChild: false,
         transition: "crossfade",
         transitionDuration: userOptions.animations.durationLarge,
-        child: Widget.Label({
+        child: label({ // Corrected
             className: 'overview-search-results-txt txt txt-small txt-action',
             label: 'Launch',
         })
     });
-    const actionTextRevealer = Widget.Revealer({
+    const actionTextRevealer = revealer({ // Corrected
         revealChild: false,
         transition: "slide_left",
         transitionDuration: userOptions.animations.durationSmall,
         child: actionText,
     });
-    return Widget.Button({
+    return button({ // Corrected
         className: 'overview-search-result-btn',
         onClicked: () => {
-            App.closeWindow('overview');
-            app.launch();
+            app.closeWindow('overview'); // Corrected
+            appEntry.launch();
         },
-        child: Widget.Box({
+        child: box({ // Corrected
             children: [
-                Widget.Box({
+                box({ // Corrected
                     vertical: false,
                     children: [
-                        Widget.Box({
+                        box({ // Corrected
                             className: 'overview-search-results-icon',
                             homogeneous: true,
-                            child: Widget.Icon({
-                                icon: app.iconName,
+                            child: icon({ // Corrected
+                                icon: appEntry.iconName,
                             }),
                         }),
-                        Widget.Label({
+                        label({ // Corrected
                             className: 'overview-search-results-txt txt txt-norm',
-                            label: app.name,
+                            label: appEntry.name,
                         }),
-                        Widget.Box({ hexpand: true }),
+                        box({ hexpand: true }), // Corrected
                         actionTextRevealer,
                     ]
                 })
@@ -156,7 +156,7 @@ export const CustomCommandButton = ({ text = '' }) => searchItem({
     actionName: 'Run',
     content: `${text}`,
     onActivate: () => {
-        App.closeWindow('overview');
+        app.closeWindow('overview'); // Corrected
         launchCustomCommand(text);
     },
 });
@@ -167,7 +167,7 @@ export const SearchButton = ({ text = '' }) => searchItem({
     actionName: 'Go',
     content: `${text}`,
     onActivate: () => {
-        App.closeWindow('overview');
+        app.closeWindow('overview'); // Corrected
         let search = userOptions.search.engineBaseUrl + text;
         for (let site of userOptions.search.excludedSites) {
             if (site) search += ` -site:${site}`;
@@ -183,7 +183,7 @@ export const AiButton = ({ text }) => searchItem({
     content: `${text}`,
     onActivate: () => {
         GeminiService.send(text);
-        App.closeWindow('overview');
-        App.openWindow('sideleft');
+        app.closeWindow('overview'); // Corrected
+        app.openWindow('sideleft'); // Corrected
     },
 });

@@ -1,13 +1,13 @@
 const { Gtk, GLib } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { EventBox, Button } = Widget;
+// const { EventBox, Button } = Widget; // To be removed
 
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
-import Applications from 'resource:///com/github/Aylur/ags/service/applications.js';
+import Hyprland from 'gi://AstalHyprland';
+import Applications from 'ags/service/applications';
 const { execAsync, exec } = Utils;
-const { Box, Revealer } = Widget;
+// const { Box, Revealer } = Widget; // To be removed
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
 import { getAllFiles, searchIcons } from './icons.js'
 import { MaterialIcon } from '../.commonwidgets/materialicon.js';
@@ -40,15 +40,15 @@ function ExclusiveWindow(client) {
 
 const focus = ({ address }) => Utils.execAsync(`hyprctl dispatch focuswindow address:${address}`).catch(print);
 
-const DockSeparator = (props = {}) => Box({
+const DockSeparator = (props = {}) => box({
     ...props,
     className: 'dock-separator',
 })
 
-const PinButton = () => Widget.Button({
+const PinButton = () => button({
     className: 'dock-app-btn dock-app-btn-animate',
     tooltipText: 'Pin Dock',
-    child: Widget.Box({
+    child: box({
         homogeneous: true,
         className: 'dock-app-icon txt',
         child: MaterialIcon('push_pin', 'hugeass')
@@ -60,40 +60,40 @@ const PinButton = () => Widget.Button({
     setup: setupCursorHover,
 })
 
-const LauncherButton = () => Widget.Button({
+const LauncherButton = () => button({
     className: 'dock-app-btn dock-app-btn-animate',
     tooltipText: 'Open launcher',
-    child: Widget.Box({
+    child: box({
         homogeneous: true,
         className: 'dock-app-icon txt',
         child: MaterialIcon('apps', 'hugerass')
     }),
     onClicked: (self) => {
-        App.toggleWindow('overview');
+        app.toggleWindow('overview'); // Corrected to lowercase 'app'
     },
     setup: setupCursorHover,
 })
 
-const AppButton = ({ icon, ...rest }) => Widget.Revealer({
+const AppButton = ({ icon, ...rest }) => revealer({
     attribute: {
         'workspace': 0
     },
     revealChild: false,
     transition: 'slide_right',
     transitionDuration: userOptions.animations.durationLarge,
-    child: Widget.Button({
+    child: button({
         ...rest,
         className: 'dock-app-btn dock-app-btn-animate',
-        child: Widget.Box({
-            child: Widget.Overlay({
-                child: Widget.Box({
+        child: box({
+            child: overlay({ // Assuming overlay is an intrinsic
+                child: box({
                     homogeneous: true,
                     className: 'dock-app-icon',
-                    child: Widget.Icon({
+                    child: icon({ // Using intrinsic 'icon'
                         icon: icon,
                     }),
                 }),
-                overlays: [Widget.Box({
+                overlays: [box({
                     class_name: 'indicator',
                     vpack: 'end',
                     hpack: 'center',
@@ -106,7 +106,7 @@ const AppButton = ({ icon, ...rest }) => Widget.Revealer({
     })
 });
 
-const Taskbar = (monitor) => Widget.Box({
+const Taskbar = (monitor) => box({
     className: 'dock-apps',
     attribute: {
         monitor: monitor,
@@ -206,7 +206,7 @@ const Taskbar = (monitor) => Widget.Box({
     },
 });
 
-const PinnedApps = () => Widget.Box({
+const PinnedApps = () => box({
     class_name: 'dock-apps',
     homogeneous: true,
     children: userOptions.dock.pinnedApps
@@ -246,7 +246,7 @@ const PinnedApps = () => Widget.Box({
 });
 
 export default (monitor = 0) => {
-    const dockContent = Box({
+    const dockContent = box({
         className: 'dock-bg spacing-h-5',
         children: [
             PinButton(),
@@ -256,7 +256,7 @@ export default (monitor = 0) => {
             LauncherButton(),
         ]
     })
-    const dockRevealer = Revealer({
+    const dockRevealer = revealer({
         attribute: {
             'updateShow': self => { // I only use mouse to resize. I don't care about keyboard resize if that's a thing
                 if (userOptions.dock.monitorExclusivity)
@@ -297,12 +297,12 @@ export default (monitor = 0) => {
                 .hook(Hyprland, self => callback(self, "client-removed"), "client-removed")
         },
     })
-    return EventBox({
+    return eventBox({
         onHover: () => {
             dockRevealer.revealChild = true;
             clearTimes()
         },
-        child: Box({
+        child: box({
             homogeneous: true,
             css: `min-height: ${userOptions.dock.hiddenThickness}px;`,
             children: [dockRevealer],

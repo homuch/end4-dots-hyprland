@@ -52,11 +52,11 @@ export default function Notification({
                     box({ // Header: app icon, name, time, close button
                         className: 'spacing-h-10',
                         children: [
-                            AgsIcon({ icon: icon_name || app_icon || 'dialog-information-symbolic', size: 24 }), // App icon
+                            icon({ icon: icon_name || app_icon || 'dialog-information-symbolic', size: 24 }), // App icon
                             label({ label: app_name || 'Notification', hexpand: true, xalign: 0, className: 'txt-bold' }),
                             label({ label: new Date(time).toLocaleTimeString(), className: 'txt-small' }),
                             button({
-                                child: AgsIcon({icon: 'window-close-symbolic'}),
+                                child: icon({icon: 'window-close-symbolic'}),
                                 onClicked: () => { if (onDismiss) onDismiss(id); },
                                 className: 'notification-close-button',
                             })

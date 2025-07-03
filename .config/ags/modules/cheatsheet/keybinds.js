@@ -1,15 +1,15 @@
 const { GLib, Gtk } = imports.gi;
-import App from "resource:///com/github/Aylur/ags/app.js";
+import app from "ags/gtk4/app";
 import * as Utils from "resource:///com/github/Aylur/ags/utils.js";
-import Widget from "resource:///com/github/Aylur/ags/widget.js";
+// import Widget from "resource:///com/github/Aylur/ags/widget.js"; // To be removed
 import { IconTabContainer } from "../.commonwidgets/tabcontainer.js";
-const { Box, Label, Scrollable } = Widget;
+// const { Box, Label, Scrollable } = Widget; // To be removed
 
 const HYPRLAND_KEYBIND_CONFIG_FILE = userOptions.cheatsheet.keybinds.configPath ?
     userOptions.cheatsheet.keybinds.configPath : `${GLib.get_user_config_dir()}/hypr/hyprland/keybinds.conf`;
 const KEYBIND_SECTIONS_PER_PAGE = 3;
 const getKeybindList = () => {
-    let data = Utils.exec(`${App.configDir}/scripts/hyprland/get_keybinds.py --path ${HYPRLAND_KEYBIND_CONFIG_FILE}`);
+    let data = Utils.exec(`${app.configDir}/scripts/hyprland/get_keybinds.py --path ${HYPRLAND_KEYBIND_CONFIG_FILE}`);
     if (data == "\"error\"") {
         Utils.timeout(2000, () => Utils.execAsync(['notify-send',
             'Update path to keybinds',
@@ -38,17 +38,17 @@ const substituteKey = (key) => {
 }
 
 const Keybind = (keybindData, type) => { // type: either "keys" or "actions"
-    const Key = (key) => Label({ // Specific keys
+    const Key = (key) => label({ // Specific keys
         vpack: 'center',
         className: `${['OR', '+'].includes(key) ? 'cheatsheet-key-notkey' : 'cheatsheet-key'} txt-small`,
         label: substituteKey(key),
     });
-    const Action = (text) => Label({ // Binds
+    const Action = (text) => label({ // Binds
         xalign: 0,
         label: getString(text),
         className: "txt txt-small cheatsheet-action",
     })
-    return Widget.Box({
+    return box({
         className: "spacing-h-10 cheatsheet-bind-lineheight",
         children: type == "keys" ? [
             ...(keybindData.mods.length > 0 ? [
@@ -61,38 +61,38 @@ const Keybind = (keybindData, type) => { // type: either "keys" or "actions"
 }
 
 const Section = (sectionData, scope) => {
-    const keys = Box({
+    const keys = box({
         vertical: true,
         className: 'spacing-v-5',
         children: sectionData.keybinds.map((data) => Keybind(data, "keys"))
     })
-    const actions = Box({
+    const actions = box({
         vertical: true,
         className: 'spacing-v-5',
         children: sectionData.keybinds.map((data) => Keybind(data, "actions"))
     })
-    const name = Label({
+    const name = label({
         xalign: 0,
         className: "cheatsheet-category-title txt margin-bottom-10",
         label: getString(sectionData.name),
     })
-    const binds = Box({
+    const binds = box({
         className: 'spacing-h-10',
         children: [
             keys,
             actions,
         ]
     })
-    const childrenSections = Box({
+    const childrenSections = box({
         vertical: true,
         className: 'spacing-v-15',
         children: sectionData.children.map((data) => Section(data, scope + 1))
     })
-    return Box({
+    return box({
         vertical: true,
         children: [
             ...((sectionData.name && sectionData.name.length > 0) ? [name] : []),
-            Box({
+            box({
                 className: 'spacing-v-10',
                 children: [
                     binds,
@@ -106,12 +106,12 @@ const Section = (sectionData, scope) => {
 export default () => {
     const numOfTabs = Math.ceil(keybindList.children.length / KEYBIND_SECTIONS_PER_PAGE);
     const keybindPages = Array.from({ length: numOfTabs }, (_, i) => ({
-        iconWidget: Label({
+        iconWidget: label({
             className: "txt txt-small",
             label: `${i + 1}`,
         }),
         name: `${i + 1}`,
-        child: Box({
+        child: box({
             className: 'spacing-h-30',
             children: keybindList.children.slice(
                 KEYBIND_SECTIONS_PER_PAGE * i, 0 + KEYBIND_SECTIONS_PER_PAGE * (i + 1),

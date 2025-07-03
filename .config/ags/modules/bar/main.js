@@ -1,6 +1,6 @@
 const { Gtk } = imports.gi;
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
+import Battery from 'gi://AstalBattery';
+// Intrinsics like box, centerBox, window, stack are globally available in AGS v2/v3
 
 import WindowTitle from "./normal/spaceleft.js";
 import Indicators from "./normal/spaceright.js";
@@ -35,11 +35,11 @@ const FocusOptionalWorkspaces = async () => {
 };
 
 export const Bar = async (monitor = 0) => {
-    const SideModule = (children) => Widget.Box({
+    const SideModule = (children) => box({
         className: 'bar-sidemodule',
         children: children,
     });
-    const normalBarContent = Widget.CenterBox({
+    const normalBarContent = centerBox({
         className: 'bar-bg',
         setup: (self) => {
             const styleContext = self.get_style_context();
@@ -47,11 +47,11 @@ export const Bar = async (monitor = 0) => {
             // execAsync(['bash', '-c', `hyprctl keyword monitor ,addreserved,${minHeight},0,0,0`]).catch(print);
         },
         startWidget: (await WindowTitle(monitor)),
-        centerWidget: Widget.Box({
+        centerWidget: box({
             className: 'spacing-h-4',
             children: [
                 SideModule([Music()]),
-                Widget.Box({
+                box({
                     homogeneous: true,
                     children: [await NormalOptionalWorkspaces()],
                 }),
@@ -60,21 +60,21 @@ export const Bar = async (monitor = 0) => {
         }),
         endWidget: Indicators(monitor),
     });
-    const focusedBarContent = Widget.CenterBox({
+    const focusedBarContent = centerBox({
         className: 'bar-bg-focus',
-        startWidget: Widget.Box({}),
-        centerWidget: Widget.Box({
+        startWidget: box({}),
+        centerWidget: box({
             className: 'spacing-h-4',
             children: [
                 SideModule([]),
-                Widget.Box({
+                box({
                     homogeneous: true,
                     children: [await FocusOptionalWorkspaces()],
                 }),
                 SideModule([]),
             ]
         }),
-        endWidget: Widget.Box({}),
+        endWidget: box({}),
         setup: (self) => {
             self.hook(Battery, (self) => {
                 if (!Battery.available) return;
@@ -82,16 +82,16 @@ export const Bar = async (monitor = 0) => {
             })
         }
     });
-    const nothingContent = Widget.Box({
+    const nothingContent = box({
         className: 'bar-bg-nothing',
     })
-    return Widget.Window({
+    return window({
         monitor,
         name: `bar${monitor}`,
         anchor: ['top', 'left', 'right'],
         exclusivity: 'exclusive',
         visible: true,
-        child: Widget.Stack({
+        child: stack({
             homogeneous: false,
             transition: 'slide_up_down',
             transitionDuration: userOptions.animations.durationLarge,
@@ -107,7 +107,7 @@ export const Bar = async (monitor = 0) => {
     });
 }
 
-export const BarCornerTopleft = (monitor = 0) => Widget.Window({
+export const BarCornerTopleft = (monitor = 0) => window({
     monitor,
     name: `barcornertl${monitor}`,
     layer: 'top',
@@ -117,7 +117,7 @@ export const BarCornerTopleft = (monitor = 0) => Widget.Window({
     child: RoundedCorner('topleft', { className: 'corner', }),
     setup: enableClickthrough,
 });
-export const BarCornerTopright = (monitor = 0) => Widget.Window({
+export const BarCornerTopright = (monitor = 0) => window({
     monitor,
     name: `barcornertr${monitor}`,
     layer: 'top',

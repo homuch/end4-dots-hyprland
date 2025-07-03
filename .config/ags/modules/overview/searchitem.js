@@ -1,43 +1,43 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 
 export const searchItem = ({ materialIconName, name, actionName, content, onActivate, extraClassName = '', ...rest }) => {
-    const actionText = Widget.Revealer({
+    const actionText = revealer({ // Corrected
         revealChild: false,
         transition: "crossfade",
         transitionDuration: userOptions.animations.durationLarge,
-        child: Widget.Label({
+        child: label({ // Corrected
             className: 'overview-search-results-txt txt txt-small txt-action',
             label: `${actionName}`,
         })
     });
-    const actionTextRevealer = Widget.Revealer({
+    const actionTextRevealer = revealer({ // Corrected
         revealChild: false,
         transition: "slide_left",
         transitionDuration: userOptions.animations.durationSmall,
         child: actionText,
     })
-    return Widget.Button({
+    return button({ // Corrected
         className: `overview-search-result-btn txt ${extraClassName}`,
         onClicked: onActivate,
-        child: Widget.Box({
+        child: box({ // Corrected
             children: [
-                Widget.Box({
+                box({ // Corrected
                     vertical: false,
                     children: [
-                        Widget.Label({
+                        label({ // Corrected, assuming MaterialIcon is a type of label or custom component
                             className: `icon-material overview-search-results-icon`,
                             label: `${materialIconName}`,
                         }),
-                        Widget.Box({
+                        box({ // Corrected
                             vertical: true,
                             children: [
-                                Widget.Label({
+                                label({ // Corrected
                                     hpack: 'start',
                                     className: 'overview-search-results-txt txt-smallie txt-subtext',
                                     label: `${name}`,
                                     truncate: "end",
                                 }),
-                                Widget.Label({
+                                label({ // Corrected
                                     hpack: 'start',
                                     className: 'overview-search-results-txt txt-norm',
                                     label: `${content}`,
@@ -45,7 +45,7 @@ export const searchItem = ({ materialIconName, name, actionName, content, onActi
                                 }),
                             ]
                         }),
-                        Widget.Box({ hexpand: true }),
+                        box({ hexpand: true }), // Corrected
                         actionTextRevealer,
                     ],
                 })

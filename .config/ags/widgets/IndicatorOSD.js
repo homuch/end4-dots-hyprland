@@ -14,7 +14,7 @@ const FallbackMusicControlsDisplay = () => box({
 
 
 export default function IndicatorOSDWindow({ monitor = 0 } = {}) {
-    return AgsWindow({
+    return window({
         name: `indicator${monitor}`,
         monitor: monitor,
         className: 'indicator-osd-window', // Base class for the window

@@ -1,28 +1,28 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync, exec } = Utils;
-const { Box, EventBox, Label, Revealer, Overlay } = Widget;
+// const { box, eventBox, label, revealer, overlay } = Widget; // To be removed
 import { AnimatedCircProg } from "../.commonwidgets/cairo_circularprogress.js";
 import { MaterialIcon } from '../.commonwidgets/materialicon.js';
 
-const ResourceValue = (name, icon, interval, valueUpdateCmd, displayFunc, props = {}) => Box({
+const ResourceValue = (name, icon, interval, valueUpdateCmd, displayFunc, props = {}) => box({
     ...props,
     className: 'bg-system-bg txt',
     children: [
-        Revealer({
+        revealer({
             transition: 'slide_left',
             transitionDuration: userOptions.animations.durationLarge,
-            child: Box({
+            child: box({
                 vpack: 'center',
                 vertical: true,
                 className: 'margin-right-15',
                 children: [
-                    Label({
+                    label({
                         xalign: 1,
                         className: 'txt-small txt',
                         label: `${name}`,
                     }),
-                    Label({
+                    label({
                         xalign: 1,
                         className: 'titlefont txt-norm txt-onSecondaryContainer',
                         setup: (self) => self
@@ -32,7 +32,7 @@ const ResourceValue = (name, icon, interval, valueUpdateCmd, displayFunc, props 
                 ]
             })
         }),
-        Overlay({
+        overlay({
             child: AnimatedCircProg({
                 className: 'bg-system-circprog',
                 extraSetup: (self) => self
@@ -51,7 +51,7 @@ const ResourceValue = (name, icon, interval, valueUpdateCmd, displayFunc, props 
     ]
 })
 
-const resources = Box({
+const resources = box({
     vpack: 'fill',
     vertical: true,
     className: 'spacing-v-15',
@@ -80,18 +80,18 @@ const resources = Box({
     ]
 });
 
-const distroAndVersion = Box({
+const distroAndVersion = box({
     vertical: true,
     children: [
-        Box({
+        box({
             hpack: 'end',
             children: [
-                Label({
+                label({
                     className: 'bg-distro-txt',
                     xalign: 0,
                     label: 'Hyping on ',
                 }),
-                Label({
+                label({
                     className: 'bg-distro-name',
                     xalign: 0,
                     label: '<distro>',
@@ -103,15 +103,15 @@ const distroAndVersion = Box({
                 }),
             ]
         }),
-        Box({
+        box({
             hpack: 'end',
             children: [
-                Label({
+                label({
                     className: 'bg-distro-txt',
                     xalign: 0,
                     label: 'with ',
                 }),
-                Label({
+                label({
                     className: 'bg-distro-name',
                     xalign: 0,
                     label: 'An environment idk',
@@ -129,12 +129,12 @@ const distroAndVersion = Box({
     ]
 })
 
-export default () => Box({
+export default () => box({
     hpack: 'end',
     vpack: 'end',
     children: [
-        EventBox({
-            child: Box({
+        eventBox({
+            child: box({
                 hpack: 'end',
                 vpack: 'end',
                 className: 'bg-distro-box spacing-v-20',

@@ -1,54 +1,39 @@
-import Wp from 'gi://AstalWp';
+// Placeholder for Audio Service
+// Original: resource:///com/github/Aylur/ags/service/audio.js
+// V2 might be: import Audio from 'gi://Gvc'; or similar for PipeWire/PulseAudio control.
+import { createState } from 'ags';
 
-// Get the default WirePlumber instance
-const wp = Wp.get_default();
+const [speakerVolume, setSpeakerVolume] = createState(0.75);
+const [speakerMuted, setSpeakerMuted] = createState(false);
+// Similar for microphone if needed
 
-// The AstalWp.Audio service is available as wp.audio
-// It provides default_speaker and default_microphone which are AstalWp.Endpoint objects.
-// These Endpoint objects have GObject properties like 'volume' and 'mute'
-// that AGS can bind to directly.
+const FakeSpeaker = {
+    _volume_accessor: speakerVolume, // For direct binding
+    _muted_accessor: speakerMuted,   // For direct binding
 
-// Example of how to wait for the 'ready' signal if needed for imperative actions,
-// but for reactive bindings, AGS usually handles this fine.
-// wp.connect('ready', () => {
-//     console.log('WirePlumber service is ready.');
-//     console.log('Initial speaker volume:', wp.audio.default_speaker?.volume);
-// });
-
-const AudioService = {
-    // Expose the default speaker and microphone directly.
-    // AGS should be able to bind to their properties like:
-    // audioService.speaker.volume
-    // audioService.speaker.mute
-    // audioService.microphone.volume
-    // audioService.microphone.mute
-    get speaker() {
-        return wp.audio.default_speaker;
+    get volume() { return speakerVolume.value; },
+    set volume(val) {
+        const clampedVal = Math.max(0, Math.min(1, val));
+        setSpeakerVolume(clampedVal);
+        console.log(`Speaker volume set to ${clampedVal.toFixed(2)}`);
+        // Real service would use amixer, pactl, or Gvc
     },
-
-    get microphone() {
-        return wp.audio.default_microphone;
+    get muted() { return speakerMuted.value; },
+    set muted(val) {
+        setSpeakerMuted(!!val);
+        console.log(`Speaker muted: ${!!val}`);
     },
-
-    // Provide lists of available devices if needed by UI
-    get speakers() {
-        return wp.audio.speakers; // This is a GList of AstalWpEndpoint objects
-    },
-
-    get microphones() {
-        return wp.audio.microphones; // This is a GList of AstalWpEndpoint objects
-    },
-
-    // Expose the core AstalWp.Audio instance if deeper access is needed
-    get wpAudio() {
-        return wp.audio;
-    },
-
-    // connect method for the service itself, if top-level signals are needed.
-    // For property changes on speaker/microphone, connect directly to those objects.
-    // connect: (signal, callback) => {
-    //    return wp.audio.connect(signal, callback);
-    // }
+    // connect for property changes (e.g., 'notify::volume')
+    // This fake service uses createState, so direct binding to accessors is preferred.
+    connect: (signal, callback) => { /* console.log(`FakeAudio.speaker: connect to ${signal}`); */ }
 };
 
+const AudioService = {
+    speaker: FakeSpeaker,
+    // microphone: FakeMicrophone, // if needed
+    // Other properties like 'speakers' (list of sinks), 'microphones' (list of sources)
+    // connect: (signal, callback) => { /* console.log(`FakeAudio service: connect to ${signal}`); */ }
+};
+
+// For easy console testing: globalThis.fa = AudioService; fa.speaker.volume = 0.5;
 export default AudioService;

@@ -1,7 +1,8 @@
 const { Gtk, Gdk } = imports.gi;
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Added app import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
-const { Box, Button, CenterBox, Entry, EventBox, Icon, Label, Overlay, Revealer, Scrollable, Stack } = Widget;
+// const { Box, Button, CenterBox, Entry, EventBox, Icon, Label, Overlay, Revealer, Scrollable, Stack } = Widget; // To be removed
 const { execAsync, exec } = Utils;
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
 // APIs
@@ -20,9 +21,9 @@ import { IconTabContainer } from '../.commonwidgets/tabcontainer.js';
 import { updateNestedProperty } from '../.miscutils/objects.js';
 
 const EXPAND_INPUT_THRESHOLD = 30;
-const AGS_CONFIG_FILE = `${App.configDir}/user_options.jsonc`;
+const AGS_CONFIG_FILE = `${app.configDir}/user_options.jsonc`; // Corrected to app
 
-export const chatEntry = TextView({
+export const chatEntry = new Gtk.TextView({ // Changed to Gtk.TextView constructor
     hexpand: true,
     wrapMode: Gtk.WrapMode.WORD_CHAR,
     acceptsTab: false,
@@ -143,14 +144,14 @@ chatEntry.get_buffer().connect("changed", (buffer) => {
     }
 });
 
-const chatEntryWrapper = Scrollable({
+const chatEntryWrapper = scrollable({ // Corrected
     className: 'sidebar-chat-wrapper',
     hscroll: 'never',
     vscroll: 'always',
     child: chatEntry,
 });
 
-const chatSendButton = Button({
+const chatSendButton = button({ // Corrected
     className: 'txt-norm icon-material sidebar-chat-send',
     vpack: 'end',
     label: 'arrow_upward',
@@ -161,14 +162,14 @@ const chatSendButton = Button({
     },
 });
 
-const chatPlaceholder = Label({
+const chatPlaceholder = label({ // Corrected
     className: 'txt-subtext txt-smallie margin-left-5',
     hpack: 'start',
     vpack: 'center',
     label: APIS[currentApiId].placeholderText,
 });
 
-const chatPlaceholderRevealer = Revealer({
+const chatPlaceholderRevealer = revealer({ // Corrected
     revealChild: true,
     transition: 'crossfade',
     transitionDuration: userOptions.animations.durationLarge,
@@ -176,20 +177,20 @@ const chatPlaceholderRevealer = Revealer({
     setup: enableClickthrough,
 });
 
-const textboxArea = Box({ // Entry area
+const textboxArea = box({ // Corrected
     className: 'sidebar-chat-textarea',
     children: [
-        Overlay({
+        overlay({ // Corrected
             passThrough: true,
             child: chatEntryWrapper,
             overlays: [chatPlaceholderRevealer],
         }),
-        Box({ className: 'width-10' }),
+        box({ className: 'width-10' }), // Corrected
         chatSendButton,
     ]
 });
 
-const apiCommandStack = Stack({
+const apiCommandStack = stack({ // Corrected
     transition: 'slide_up_down',
     transitionDuration: userOptions.animations.durationLarge,
     children: APIS.reduce((acc, api) => {
@@ -198,7 +199,7 @@ const apiCommandStack = Stack({
     }, {}),
 })
 
-export const apiContentStack = IconTabContainer({
+export const apiContentStack = IconTabContainer({ // This is an imported component
     tabSwitcherClassName: 'sidebar-icontabswitcher',
     className: 'margin-top-5',
     iconWidgets: APIS.map((api) => api.tabIcon),
@@ -225,7 +226,7 @@ function switchToTab(id) {
     apiContentStack.shown.value = id;
 }
 
-const apiWidgets = Widget.Box({
+const apiWidgets = box({ // Corrected
     attribute: {
         'nextTab': () => switchToTab(Math.min(currentApiId + 1, APIS.length - 1)),
         'prevTab': () => switchToTab(Math.max(0, currentApiId - 1)),

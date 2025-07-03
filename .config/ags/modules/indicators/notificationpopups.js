@@ -1,10 +1,10 @@
 // This file is for popup notifications
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
-const { Box } = Widget;
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
+import Notifications from 'ags/service/notifications'; // Corrected import
+// const { Box } = Widget; // To be removed
 import Notification from '../.commonwidgets/notification.js';
 
-export default () => Box({
+export default () => box({ // Changed to lowercase
     vertical: true,
     hpack: 'center',
     className: 'osd-notifs spacing-v-5-revealer',

@@ -1,6 +1,6 @@
 import app from 'ags/gtk4/app'; // Corrected import
 import { Gtk, Gdk } from 'ags/gtk4'; // Import Gtk for GestureClick
-import { box } from 'ags/widgets'; // Assuming box is an intrinsic
+// import { box } from 'ags/widgets'; // box is an intrinsic
 
 // Helper function to close windows across monitors
 // Assumes window names are like "basenameM" e.g., "cheatsheet0", "cheatsheet1"

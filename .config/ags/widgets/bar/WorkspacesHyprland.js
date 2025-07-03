@@ -22,11 +22,6 @@ const WORKSPACE_COUNT = userOptions.workspaces?.shown || 10;
 
 // This component is passed gdkmonitor if it needs monitor-specific info not available from Hyprland service directly
 const WorkspaceContents = ({ activeWsId_accessor, workspaces_accessor, gdkmonitor }) => {
-    // Dummy widgets for style property fetching
-    const dummyWsActive = box({ class: 'bar-ws bar-ws-active' });
-    const dummyWsOccupied = box({ class: 'bar-ws bar-ws-occupied' });
-    const dummyWsInactive = box({ class: 'bar-ws' });
-
     const [workspaceMask, setWorkspaceMask] = createState(0);
     const [currentWsGroup, setCurrentWsGroup] = createState(0);
 
@@ -59,19 +54,24 @@ const WorkspaceContents = ({ activeWsId_accessor, workspaces_accessor, gdkmonito
         const fontFamily = styleContext.get_property('font-family', Gtk.StateFlags.NORMAL)?.to_string() || "sans-serif";
         const fontWeight = styleContext.get_property('font-weight', Gtk.StateFlags.NORMAL) || Pango.Weight.NORMAL;
 
-        // Get colors from dummy widgets
-        const activeStyleContext = dummyWsActive.get_style_context();
-        const occupiedStyleContext = dummyWsOccupied.get_style_context();
-        const inactiveStyleContext = dummyWsInactive.get_style_context();
+        const wsbg = styleContext.get_property('background-color', Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.2, green: 0.2, blue: 0.2, alpha: 1 });
+        const wsfg = styleContext.get_color(Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.9, green: 0.9, blue: 0.9, alpha: 1 }); // Use get_color for foreground
 
-        const activebg = activeStyleContext.get_property('background-color', Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.3, green: 0.5, blue: 0.8, alpha: 1 });
-        const activefg = activeStyleContext.get_color(Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 1, green: 1, blue: 1, alpha: 1 });
+        // TODO: Robust Theming for Workspace States
+        // The following color fetching relies on the theme defining 'border-color' for active/occupied backgrounds
+        // and 'color' for active/occupied foregrounds when those Gtk.StateFlags are hypothetically applied.
+        // A more robust method would be to use CSS custom properties or a theme object passed down.
+        // Example CSS custom properties (to be defined in SCSS):
+        // .bar-ws-container {
+        //   --ws-active-bg: #somecolor; --ws-active-fg: #somecolor;
+        //   --ws-occupied-bg: #somecolor; --ws-occupied-fg: #somecolor;
+        // }
+        // Then, find a way to read these variables in JS if possible, or use distinct styled child nodes as probes.
+        const activebg = styleContext.get_border_color(Gtk.StateFlags.ACTIVE) || new Gdk.RGBA({ red: 0.3, green: 0.5, blue: 0.8, alpha: 1 });
+        const activefg = styleContext.get_color(Gtk.StateFlags.ACTIVE) || new Gdk.RGBA({ red: 1, green: 1, blue: 1, alpha: 1 });
 
-        const occupiedbg = occupiedStyleContext.get_property('background-color', Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.4, green: 0.4, blue: 0.4, alpha: 1 });
-        const occupiedfg = occupiedStyleContext.get_color(Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 1, green: 1, blue: 1, alpha: 1 });
-
-        const wsbg = inactiveStyleContext.get_property('background-color', Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.2, green: 0.2, blue: 0.2, alpha: 1 });
-        const wsfg = inactiveStyleContext.get_color(Gtk.StateFlags.NORMAL) || new Gdk.RGBA({ red: 0.9, green: 0.9, blue: 0.9, alpha: 1 });
+        const occupiedbg = styleContext.get_border_color(Gtk.StateFlags.CHECKED) || new Gdk.RGBA({ red: 0.4, green: 0.4, blue: 0.4, alpha: 1 });
+        const occupiedfg = styleContext.get_color(Gtk.StateFlags.CHECKED) || new Gdk.RGBA({ red: 1, green: 1, blue: 1, alpha: 1 });
 
 
         area.set_size_request(workspaceDiameter * WORKSPACE_COUNT, workspaceDiameter);

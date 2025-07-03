@@ -1,5 +1,6 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
+import Hyprland from 'gi://AstalHyprland'; // Corrected Hyprland import
+import app from 'ags/gtk4/app'; // Added app import
 import { enableClickthrough } from "../.widgetutils/clickthrough.js";
 import { RoundedCorner } from "../.commonwidgets/cairo_roundedcorner.js";
 
@@ -7,15 +8,15 @@ if(userOptions.appearance.fakeScreenRounding === 2) Hyprland.connect('event', (s
     if (name == 'fullscreen') {
         const monitor = Hyprland.active.monitor.id;
         if (data == '1') {
-            for (const window of App.windows) {
-                if (window.name.startsWith("corner") && window.name.endsWith(monitor)) {
-                    App.closeWindow(window.name);
+            for (const currentWindow of app.windows) { // Changed App to app, window to currentWindow
+                if (currentWindow.name.startsWith("corner") && currentWindow.name.endsWith(monitor)) {
+                    app.closeWindow(currentWindow.name); // Changed App to app
                 }
             }
         } else {
-            for (const window of App.windows) {
-                if (window.name.startsWith("corner") && window.name.endsWith(monitor)) {
-                    App.openWindow(window.name);
+            for (const currentWindow of app.windows) { // Changed App to app, window to currentWindow
+                if (currentWindow.name.startsWith("corner") && currentWindow.name.endsWith(monitor)) {
+                    app.openWindow(currentWindow.name); // Changed App to app
                 }
             }
         }
@@ -24,7 +25,7 @@ if(userOptions.appearance.fakeScreenRounding === 2) Hyprland.connect('event', (s
 
 export default (monitor = 0, where = 'bottom left', useOverlayLayer = true) => {
     const positionString = where.replace(/\s/, ""); // remove space
-    return Widget.Window({
+    return window({ // Changed Widget.Window to window
         monitor,
         name: `corner${positionString}${monitor}`,
         layer: useOverlayLayer ? 'overlay' : 'top',

@@ -1,7 +1,7 @@
 // This file is for brightness/volume indicators
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
-const { Box, Label, ProgressBar } = Widget;
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
+import Audio from '../../../services/audioService.js'; // Uses re-exported gi://AstalWp
+// const { Box, Label, ProgressBar } = Widget; // To be removed
 import { MarginRevealer } from '../.widgethacks/advancedrevealers.js';
 import Brightness from '../../services/brightness.js';
 import Indicator from '../../services/indicator.js';
@@ -12,17 +12,17 @@ const OsdValue = ({
     extraClassName = '', extraProgressClassName = '',
     ...rest
 }) => {
-    const valueName = Label({
+    const valueName = label({ // Already lowercase
         xalign: 0, yalign: 0, hexpand: true,
         className: 'osd-label',
         label: `${name}`,
         setup: nameSetup,
     });
-    const valueNumber = Label({
+    const valueNumber = label({ // Already lowercase
         hexpand: false, className: 'osd-value-txt',
         setup: labelSetup,
     });
-    return Box({ // Volume
+    return box({ // Already lowercase
         hexpand: true,
         className: `osd-bg osd-value ${extraClassName} spacing-h-5`,
         attribute: {
@@ -32,18 +32,18 @@ const OsdValue = ({
         },
         children: [
             MaterialIcon(icon, 'hugeass', {vpack: 'center', setup: iconSetup}),
-            Box({
+            box({ // Already lowercase
                 vertical: true,
                 className: 'spacing-v-5',
                 vpack: 'center',
                 children: [
-                    Box({
+                    box({ // Already lowercase
                         children: [
                             valueName,
                             valueNumber,
                         ]
                     }),
-                    ProgressBar({
+                    progressBar({
                         className: `osd-progress ${extraProgressClassName}`,
                         hexpand: true,
                         vertical: false,
@@ -57,7 +57,7 @@ const OsdValue = ({
 }
 
 export default (monitor = 0) => {
-    const brightnessIndicator = OsdValue({
+    const brightnessIndicator = OsdValue({ // This is a local function, not an AGS widget
         name: 'Brightness',
         icon: 'light_mode',
         extraClassName: 'osd-brightness',

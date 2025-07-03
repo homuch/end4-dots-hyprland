@@ -53,11 +53,11 @@ export function MarginRevealer({
     // initialReveal = false, // Use revealChild_accessor
     revealChild_accessor, // AGS Accessor
     showClass = 'element-show',
-    hideClass = 'element-hide', // Note: showClass/hideClass are not used for CSS margin animations in this version.
+    hideClass = 'element-hide',
     children,
     ...rest
 }) {
-    console.warn("MarginRevealer: The original CSS margin-based animation is replaced by standard Gtk.Revealer slide/fade transitions. The 'showClass' and 'hideClass' props are not used for animation in this version. The 'transition' prop maps to Gtk.RevealerTransitionType.");
+    console.warn("MarginRevealer's original CSS margin animation is not fully supported in this v2 migration. Using a standard Gtk.Revealer or simple class toggle instead. The 'transition' prop currently maps to Gtk.RevealerTransitionType.");
 
     const [_internalReveal, _setInternalReveal] = createState(false);
     const actualReveal = revealChild_accessor || _internalReveal;
@@ -83,12 +83,25 @@ export function MarginRevealer({
             // directly with Gtk.Revealer, as it handles its own transition.
             // The child would need to react to actualReveal itself if it needs those classes.
             // For simplicity, child does not get show/hideClass applied by this MarginRevealer directly.
-            // If child needs specific styling during reveal, it should react to `actualReveal` itself.
         >
             {children}
         </revealer>
     );
+
+    // Option 2: (Commented out) Basic class toggling on a box (no smooth slide, just fade if CSS supports)
+    // This does not use Scrollable or margin hacks.
+    /*
+    return (
+        <box
+            {...rest}
+            class={actualReveal.transform(r => r ? showClass : hideClass)}
+            // This won't "slide" based on margins unless showClass/hideClass do that with fixed sizes.
+        >
+            {children}
+        </box>
+    );
+    */
 }
 
-// Original console.warn for MarginRevealer (for reference during migration):
+// Original console.warn for MarginRevealer:
 // console.warn("MarginRevealer is difficult to migrate perfectly to AGS V2/GTK4's styling paradigms while preserving its exact dynamic margin animation. Consider using standard Gtk.Revealer or other GTK4 animation/transition features. The migrated MarginRevealer is a non-functional sketch for the animation part.");

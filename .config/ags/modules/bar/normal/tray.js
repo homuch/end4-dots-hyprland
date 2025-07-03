@@ -1,11 +1,11 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
-const { Box, Icon, Button, Revealer } = Widget;
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // No longer needed
+import SystemTray from 'ags/service/systemtray'; // Standard v2/v3 path
+// const { Box, Icon, Button, Revealer } = Widget; // No longer needed
 const { Gravity } = imports.gi.Gdk;
 
-const SysTrayItem = (item) => item.id !== null ? Button({
+const SysTrayItem = (item) => item.id !== null ? button({
     className: 'bar-systray-item',
-    child: Icon({ hpack: 'center' }).bind('icon', item, 'icon'),
+    child: icon({ hpack: 'center' }).bind('icon', item, 'icon'),
     setup: (self) => self
         .hook(item, (self) => self.tooltipMarkup = item['tooltip-markup'])
     ,
@@ -14,7 +14,7 @@ const SysTrayItem = (item) => item.id !== null ? Button({
 }) : null;
 
 export const Tray = (props = {}) => {
-    const trayContent = Box({
+    const trayContent = box({
         className: 'margin-right-5 spacing-h-15',
         setup: (self) => self
             .hook(SystemTray, (self) => {
@@ -23,13 +23,13 @@ export const Tray = (props = {}) => {
             })
         ,
     });
-    const trayRevealer = Widget.Revealer({
+    const trayRevealer = revealer({
         revealChild: true,
         transition: 'slide_left',
         transitionDuration: userOptions.animations.durationLarge,
         child: trayContent,
     });
-    return Box({
+    return box({
         ...props,
         children: [trayRevealer],
     });

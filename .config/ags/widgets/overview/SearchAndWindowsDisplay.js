@@ -1,6 +1,7 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk'; // For Gdk.ModifierType
 import app from 'ags/gtk4/app';
+// import { box, label, revealer, entry as AgsEntry } from 'ags/widgets'; // AgsEntry for Gtk.Entry // Intrinsics, entry is AgsEntry
 import { Applications, Hyprland } from '../../../services/placeholderServices.js'; // Placeholders
 // TODO: Import real services:
 // import Applications from 'ags/service/applications';
@@ -89,7 +90,7 @@ export default function SearchAndWindowsDisplay() {
         child: entryIconLabel,
     });
 
-    const searchEntry = AgsEntry({
+    const searchEntry = entry({
         className: 'overview-search-box txt-small txt', // Ensure SCSS
         hpack: 'center',
         text: searchText.value, // Initial text (empty)
@@ -205,7 +206,7 @@ export default function SearchAndWindowsDisplay() {
         ],
         setup: (self) => {
             // Clear search when overview is closed
-            app.connect('window-toggled', (_app, name, visible) => { // _app since app is already in scope
+            app.connect('window-toggled', (_app, name, visible) => { // _app because app is already in scope
                 if (name.startsWith('overview') && !visible) { // Assuming overview windows are named overview, overview0, etc.
                     setSearchText('');
                 }

@@ -37,7 +37,7 @@ export default function ScreenCornerWindow({
     // and external logic will manage it based on fullscreen events.
 
 
-    return AgsWindow({
+    return window({
         monitor,
         name: `corner${positionString}${monitor}`,
         layer: useOverlayLayer ? Gtk.LayerShellLayer.OVERLAY : Gtk.LayerShellLayer.TOP,

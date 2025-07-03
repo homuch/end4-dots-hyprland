@@ -1,9 +1,9 @@
 const { Gdk, Gtk } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app'; // Corrected App import
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
-import Applications from 'resource:///com/github/Aylur/ags/service/applications.js';
+import Applications from 'ags/service/applications'; // Corrected Applications import
 const { execAsync, exec } = Utils;
 import { execAndClose, expandTilde, hasUnterminatedBackslash, couldBeMath, launchCustomCommand, ls } from './miscfunctions.js';
 import {
@@ -41,7 +41,7 @@ const OptionalOverview = async () => {
     try {
         return (await import('./overview_hyprland.js')).default();
     } catch {
-        return Widget.Box({});
+        return box({}); // Corrected
         // return (await import('./overview_hyprland.js')).default();
     }
 };
@@ -51,11 +51,11 @@ const overviewContent = await OptionalOverview();
 export const SearchAndWindows = () => {
     var _appSearchResults = [];
 
-    const resultsBox = Widget.Box({
+    const resultsBox = box({ // Corrected
         className: 'overview-search-results',
         vertical: true,
     });
-    const resultsRevealer = Widget.Revealer({
+    const resultsRevealer = revealer({ // Corrected
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: false,
         transition: 'slide_down',
@@ -63,59 +63,59 @@ export const SearchAndWindows = () => {
         hpack: 'center',
         child: resultsBox,
     });
-    const entryPromptRevealer = Widget.Revealer({
+    const entryPromptRevealer = revealer({ // Corrected
         transition: 'crossfade',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: true,
         hpack: 'center',
-        child: Widget.Label({
+        child: label({ // Corrected
             className: 'overview-search-prompt txt-small txt',
             label: getString('Type to search')
         }),
     });
 
-    const entryIconRevealer = Widget.Revealer({
+    const entryIconRevealer = revealer({ // Corrected
         transition: 'crossfade',
         transitionDuration: userOptions.animations.durationLarge,
         revealChild: false,
         hpack: 'end',
-        child: Widget.Label({
+        child: label({ // Corrected
             className: 'txt txt-large icon-material overview-search-icon',
             label: 'search',
         }),
     });
 
-    const entryIcon = Widget.Box({
+    const entryIcon = box({ // Corrected
         className: 'overview-search-prompt-box',
-        setup: box => box.pack_start(entryIconRevealer, true, true, 0),
+        setup: item => item.pack_start(entryIconRevealer, true, true, 0), // Renamed box to item for clarity
     });
 
-    const entry = Widget.Entry({
+    const entryWidget = entry({ // Corrected, renamed to entryWidget to avoid conflict with entry in onChange
         className: 'overview-search-box txt-small txt',
         hpack: 'center',
         onAccept: (self) => { // This is when you hit Enter
             resultsBox.children[0].onClicked();
         },
-        onChange: (entry) => { // this is when you type
-            const isAction = entry.text[0] == '>';
-            const isDir = (['/', '~'].includes(entry.text[0]));
+        onChange: (self) => { // this is when you type, self is the entry widget
+            const isAction = self.text[0] == '>';
+            const isDir = (['/', '~'].includes(self.text[0]));
             resultsBox.get_children().forEach(ch => ch.destroy());
 
             // check empty if so then dont do stuff
-            if (entry.text == '') {
+            if (self.text == '') {
                 resultsRevealer.revealChild = false;
                 overviewContent.revealChild = true;
                 entryPromptRevealer.revealChild = true;
                 entryIconRevealer.revealChild = false;
-                entry.toggleClassName('overview-search-box-extended', false);
+                self.toggleClassName('overview-search-box-extended', false);
                 return;
             }
-            const text = entry.text;
+            const text = self.text;
             resultsRevealer.revealChild = true;
             overviewContent.revealChild = false;
             entryPromptRevealer.revealChild = false;
             entryIconRevealer.revealChild = true;
-            entry.toggleClassName('overview-search-box-extended', true);
+            self.toggleClassName('overview-search-box-extended', true);
             _appSearchResults = Applications.query(text);
 
             // Calculate
@@ -135,42 +135,42 @@ export const SearchAndWindows = () => {
                 })
             }
             if (userOptions.search.enableFeatures.actions && isAction) { // Eval on typing is dangerous, this is a workaround.
-                resultsBox.add(CustomCommandButton({ text: entry.text }));
+                resultsBox.add(CustomCommandButton({ text: self.text }));
             }
             // Add application entries
             let appsToAdd = MAX_RESULTS;
-            _appSearchResults.forEach(app => {
+            _appSearchResults.forEach(item => { // Renamed app to item
                 if (appsToAdd == 0) return;
-                resultsBox.add(DesktopEntryButton(app));
+                resultsBox.add(DesktopEntryButton(item)); // Pass item
                 appsToAdd--;
             });
 
             // Fallbacks
             // if the first word is an actual command
             if (userOptions.search.enableFeatures.commands && !isAction && !hasUnterminatedBackslash(text) && exec(`bash -c "command -v ${text.split(' ')[0]}"`) != '') {
-                resultsBox.add(ExecuteCommandButton({ command: entry.text, terminal: entry.text.startsWith('sudo') }));
+                resultsBox.add(ExecuteCommandButton({ command: self.text, terminal: self.text.startsWith('sudo') }));
             }
 
             // Add fallback: search
             if (userOptions.search.enableFeatures.aiSearch)
-                resultsBox.add(AiButton({ text: entry.text }));
+                resultsBox.add(AiButton({ text: self.text }));
             if (userOptions.search.enableFeatures.webSearch)
-                resultsBox.add(SearchButton({ text: entry.text }));
+                resultsBox.add(SearchButton({ text: self.text }));
             if (resultsBox.children.length == 0) resultsBox.add(NoResultButton());
             resultsBox.show_all();
         },
     });
-    return Widget.Box({
+    return box({ // Corrected
         vertical: true,
         children: [
-            Widget.Box({
+            box({ // Corrected
                 hpack: 'center',
                 children: [
-                    entry,
-                    Widget.Box({
+                    entryWidget, // Use new name
+                    box({ // Corrected
                         className: 'overview-search-icon-box',
-                        setup: (box) => {
-                            box.pack_start(entryPromptRevealer, true, true, 0)
+                        setup: (item) => { // Renamed box to item
+                            item.pack_start(entryPromptRevealer, true, true, 0)
                         },
                     }),
                     entryIcon,
@@ -180,31 +180,31 @@ export const SearchAndWindows = () => {
             resultsRevealer,
         ],
         setup: (self) => self
-            .hook(App, (_b, name, visible) => {
+            .hook(app, (_b, name, visible) => { // Corrected to app
                 if (name == 'overview' && !visible) {
                     resultsBox.children = [];
-                    entry.set_text('');
+                    entryWidget.set_text(''); // Use new name
                 }
             })
             .on('key-press-event', (widget, event) => { // Typing
                 const keyval = event.get_keyval()[1];
                 const modstate = event.get_state()[1];
                 if (checkKeybind(event, userOptions.keybinds.overview.altMoveLeft))
-                    entry.set_position(Math.max(entry.get_position() - 1, 0));
+                    entryWidget.set_position(Math.max(entryWidget.get_position() - 1, 0));
                 else if (checkKeybind(event, userOptions.keybinds.overview.altMoveRight))
-                    entry.set_position(Math.min(entry.get_position() + 1, entry.get_text().length));
+                    entryWidget.set_position(Math.min(entryWidget.get_position() + 1, entryWidget.get_text().length));
                 else if (checkKeybind(event, userOptions.keybinds.overview.deleteToEnd)) {
-                    const text = entry.get_text();
-                    const pos = entry.get_position();
+                    const text = entryWidget.get_text();
+                    const pos = entryWidget.get_position();
                     const newText = text.slice(0, pos);
-                    entry.set_text(newText);
-                    entry.set_position(newText.length);
+                    entryWidget.set_text(newText);
+                    entryWidget.set_position(newText.length);
                 }
                 else if (!(modstate & Gdk.ModifierType.CONTROL_MASK)) { // Ctrl not held
-                    if (keyval >= 32 && keyval <= 126 && widget != entry) {
-                        Utils.timeout(1, () => entry.grab_focus());
-                        entry.set_text(entry.text + String.fromCharCode(keyval));
-                        entry.set_position(-1);
+                    if (keyval >= 32 && keyval <= 126 && widget != entryWidget) { // Use entryWidget
+                        Utils.timeout(1, () => entryWidget.grab_focus()); // Use entryWidget
+                        entryWidget.set_text(entryWidget.text + String.fromCharCode(keyval)); // Use entryWidget
+                        entryWidget.set_position(-1); // Use entryWidget
                     }
                 }
             })

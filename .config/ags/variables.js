@@ -1,6 +1,6 @@
 const { Gdk, Gtk } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js'
-import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
+import app from 'ags/gtk4/app';
+import Hyprland from 'gi://AstalHyprland';
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
 import Variable from 'resource:///com/github/Aylur/ags/variable.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
@@ -8,7 +8,7 @@ const { exec, execAsync } = Utils;
 import { init as i18n_init, getString } from './i18n/i18n.js'
 //init i18n, Load language file
 i18n_init()
-Gtk.IconTheme.get_default().append_search_path(`${App.configDir}/assets/icons`);
+Gtk.IconTheme.get_default().append_search_path(`${app.configDir}/assets/icons`);
 
 // Global vars for external control (through keybinds)
 export const showMusicControls = Variable(false, {})
@@ -58,27 +58,27 @@ globalThis['cycleMode'] = () => {
 const range = (length, start = 1) => Array.from({ length }, (_, i) => i + start);
 globalThis['toggleWindowOnAllMonitors'] = (name) => {
     range(Gdk.Display.get_default()?.get_n_monitors() || 1, 0).forEach(id => {
-        App.toggleWindow(`${name}${id}`);
+        app.toggleWindow(`${name}${id}`);
     });
 }
 globalThis['closeWindowOnAllMonitors'] = (name) => {
     range(Gdk.Display.get_default()?.get_n_monitors() || 1, 0).forEach(id => {
-        App.closeWindow(`${name}${id}`);
+        app.closeWindow(`${name}${id}`);
     });
 }
 globalThis['openWindowOnAllMonitors'] = (name) => {
     range(Gdk.Display.get_default()?.get_n_monitors() || 1, 0).forEach(id => {
-        App.openWindow(`${name}${id}`);
+        app.openWindow(`${name}${id}`);
     });
 }
 
 globalThis['closeEverything'] = () => {
     const numMonitors = Gdk.Display.get_default()?.get_n_monitors() || 1;
     for (let i = 0; i < numMonitors; i++) {
-        App.closeWindow(`cheatsheet${i}`);
-        App.closeWindow(`session${i}`);
+        app.closeWindow(`cheatsheet${i}`);
+        app.closeWindow(`session${i}`);
     }
-    App.closeWindow('sideleft');
-    App.closeWindow('sideright');
-    App.closeWindow('overview');
+    app.closeWindow('sideleft');
+    app.closeWindow('sideright');
+    app.closeWindow('overview');
 };

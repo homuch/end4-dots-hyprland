@@ -6,9 +6,9 @@ import { writeFileAsync } from 'ags/file';
 import { timeout } from 'ags/time'; // Assuming ags/time is correct
 import { options as userOptions } from '../../options.js'; // Corrected path
 
-import Battery from 'ags/service/battery'; // Use actual service path
+import Battery from 'gi://AstalBattery';
 // No more try-catch for dynamic import of Battery here.
-// If 'ags/service/battery' fails, the app won't load this module correctly, which is fine.
+// If 'gi://AstalBattery' fails, the app won't load this module correctly, which is fine.
 
 // let battery = Battery; // If Battery itself is the service instance.
 // Or if it's a class: const battery = new Battery() or Battery.get_default().

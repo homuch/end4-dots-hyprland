@@ -1,7 +1,7 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync, exec } = Utils;
-const { Box, EventBox } = Widget;
+// const { Box, EventBox } = Widget; // To be removed
 import {
     ToggleIconBluetooth,
     ToggleIconWifi,
@@ -68,14 +68,14 @@ const centerWidgets = [
     },
 ];
 
-const timeRow = Box({
+const timeRow = box({ // Corrected
     className: 'spacing-h-10 sidebar-group-invisible-morehorizpad',
     children: [
-        Widget.Icon({
+        icon({ // Corrected
             icon: getDistroIcon(),
             className: 'txt txt-larger',
         }),
-        Widget.Label({
+        label({ // Corrected
             hpack: 'center',
             className: 'txt-small txt',
             setup: (self) => {
@@ -121,20 +121,20 @@ const timeRow = Box({
                 });
             },
         }),
-        Widget.Box({ hexpand: true }),
+        box({ hexpand: true }), // Corrected
         ModuleReloadIcon({ hpack: 'end' }),
         // ModuleSettingsIcon({ hpack: 'end' }), // Button does work, gnome-control-center is kinda broken
         ModulePowerIcon({ hpack: 'end' }),
     ]
 });
 
-const togglesBox = Widget.Box({
+const togglesBox = box({ // Corrected
     hpack: 'center',
     className: 'sidebar-togglesbox spacing-h-5',
     children: userOptions.sidebar.quickToggles.order.map(toggle => QUICK_TOGGLES[toggle])
 })
 
-export const sidebarOptionsStack = ExpandingIconTabContainer({
+export const sidebarOptionsStack = ExpandingIconTabContainer({ // This is an imported component
     tabsHpack: 'center',
     tabSwitcherClassName: 'sidebar-icontabswitcher',
     icons: centerWidgets.map((api) => api.materialIcon),
@@ -146,22 +146,22 @@ export const sidebarOptionsStack = ExpandingIconTabContainer({
     }
 });
 
-export default () => Box({
+export default () => box({ // Corrected
     vexpand: true,
     hexpand: true,
     css: 'min-width: 2px;',
     children: [
-        EventBox({
-            onPrimaryClick: () => App.closeWindow('sideright'),
-            onSecondaryClick: () => App.closeWindow('sideright'),
-            onMiddleClick: () => App.closeWindow('sideright'),
+        eventBox({ // Corrected
+            onPrimaryClick: () => app.closeWindow('sideright'), // Corrected to app
+            onSecondaryClick: () => app.closeWindow('sideright'), // Corrected to app
+            onMiddleClick: () => app.closeWindow('sideright'), // Corrected to app
         }),
-        Box({
+        box({ // Corrected
             vertical: true,
             vexpand: true,
             className: 'sidebar-right spacing-v-15',
             children: [
-                Box({
+                box({ // Corrected
                     vertical: true,
                     className: 'spacing-v-5',
                     children: [
@@ -169,7 +169,7 @@ export default () => Box({
                         togglesBox,
                     ]
                 }),
-                Box({
+                box({ // Corrected
                     className: 'sidebar-group',
                     children: [
                         sidebarOptionsStack,

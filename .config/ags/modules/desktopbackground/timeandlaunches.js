@@ -1,20 +1,20 @@
 const { GLib } = imports.gi;
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Service from 'resource:///com/github/Aylur/ags/service.js';
+import app from 'ags/gtk4/app'; // Corrected import, though not directly used here
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
+// import Service from 'resource:///com/github/Aylur/ags/service.js'; // Not used
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
-import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-const { execAsync, exec } = Utils;
-const { Box, Label, Button, Revealer, EventBox } = Widget;
+// import Variable from 'resource:///com/github/Aylur/ags/variable.js'; // Not used
+const { execAsync, exec } = Utils; // exec not used
+// const { Box, Label, Button, Revealer, EventBox } = Widget; // To be removed
 import { setupCursorHover } from '../.widgetutils/cursorhover.js';
 import { quickLaunchItems } from './data_quicklaunches.js'
 
-const TimeAndDate = () => Box({
+const TimeAndDate = () => box({
     vertical: true,
     className: 'spacing-v--5',
     children: [
-        Label({
+        label({
             className: 'bg-time-clock',
             xalign: 0,
             label: GLib.DateTime.new_now_local().format(userOptions.time.format),
@@ -22,7 +22,7 @@ const TimeAndDate = () => Box({
                 label.label = GLib.DateTime.new_now_local().format(userOptions.time.format);
             }),
         }),
-        Label({
+        label({
             className: 'bg-time-date',
             xalign: 0,
             label: GLib.DateTime.new_now_local().format(userOptions.time.dateFormatLong),
@@ -33,24 +33,24 @@ const TimeAndDate = () => Box({
     ]
 })
 
-const QuickLaunches = () => Box({
+const QuickLaunches = () => box({
     vertical: true,
     className: 'spacing-v-10',
     children: [
-        Label({
+        label({
             xalign: 0,
             className: 'bg-quicklaunch-title',
             label: 'Quick Launches',
         }),
-        Box({
+        box({
             hpack: 'start',
             className: 'spacing-h-5',
-            children: quickLaunchItems.map((item, i) => Button({
+            children: quickLaunchItems.map((item, i) => button({
                 onClicked: () => {
                     execAsync(['bash', '-c', `${item["command"]}`]).catch(print);
                 },
                 className: 'bg-quicklaunch-btn',
-                child: Label({
+                child: label({
                     label: `${item["name"]}`,
                 }),
                 setup: (self) => {
@@ -61,7 +61,7 @@ const QuickLaunches = () => Box({
     ]
 })
 
-export default () => Box({
+export default () => box({
     hpack: 'start',
     vpack: 'end',
     vertical: true,

@@ -1,6 +1,5 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gdk from 'gi://Gdk';
-import { box, icon as AgsIcon, button, revealer } from 'ags/widgets';
 // import { createBinding, createEffect } from 'ags'; // Not strictly needed if using .transform and direct binding
 import SystemTray from 'ags/service/systemtray'; // Import real service
 import { options as userOptions } from '../../options.js';
@@ -15,7 +14,7 @@ const SysTrayItem = ({ item }) => { // item is a SystemTray.Item GObject
 
     return button({
         className: 'bar-systray-item', // Ensure SCSS
-        child: AgsIcon({
+        child: icon({
             icon: item.bind('icon'), // Bind to the 'icon' property of the item
         }),
         tooltipMarkup: item.bind('tooltip_markup'), // Bind to 'tooltip_markup'

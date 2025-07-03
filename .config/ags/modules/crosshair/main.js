@@ -1,14 +1,14 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import { enableClickthrough } from "../.widgetutils/clickthrough.js";
 
 export default (monitor = 0, ) => {
-    return Widget.Window({
+    return window({
         monitor,
         name: `crosshair${monitor}`,
         layer: 'overlay',
         exclusivity: 'ignore',
         visible: false,
-        child: Widget.Icon({
+        child: icon({
             icon: 'crosshair-symbolic',
             css: `
                 font-size: ${userOptions.gaming.crosshair.size}px;

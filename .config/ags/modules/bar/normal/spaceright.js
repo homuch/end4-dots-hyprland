@@ -1,9 +1,8 @@
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import app from 'ags/gtk4/app';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
-import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
-import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
+import Audio from '../../../services/audioService.js'; // Uses re-exported gi://AstalWp
+import SystemTray from 'ags/service/systemtray'; // Standard v2/v3 path
 const { execAsync } = Utils;
 import Indicator from '../../../services/indicator.js';
 import { StatusIcons } from '../../.commonwidgets/statusicons.js';
@@ -12,7 +11,7 @@ import { distance } from '../../.miscutils/mathfuncs.js';
 
 const OSD_DISMISS_DISTANCE = 10;
 
-const SeparatorDot = () => Widget.Revealer({
+const SeparatorDot = () => revealer({
     transition: 'slide_left',
     revealChild: false,
     attribute: {
@@ -22,7 +21,7 @@ const SeparatorDot = () => Widget.Revealer({
             self.revealChild = (self.attribute.count > 0);
         }
     },
-    child: Widget.Box({
+    child: box({
         vpack: 'center',
         className: 'separator-circle',
     }),
@@ -42,7 +41,7 @@ export default (monitor = 0) => {
             }
         }),
     }, monitor);
-    const SpaceRightInteractions = (child) => Widget.EventBox({
+    const SpaceRightInteractions = (child) => eventBox({
         onHover: () => { barStatusIcons.toggleClassName('bar-statusicons-hover', true) },
         onHoverLost: () => { barStatusIcons.toggleClassName('bar-statusicons-hover', false) },
         onPrimaryClick: () => App.toggleWindow('sideright'),
@@ -56,14 +55,14 @@ export default (monitor = 0) => {
         }),
         child: child,
     });
-    const emptyArea = SpaceRightInteractions(Widget.Box({ hexpand: true, }));
-    const indicatorArea = SpaceRightInteractions(Widget.Box({
+    const emptyArea = SpaceRightInteractions(box({ hexpand: true, }));
+    const indicatorArea = SpaceRightInteractions(box({
         children: [
             SeparatorDot(),
             barStatusIcons
         ],
     }));
-    const actualContent = Widget.Box({
+    const actualContent = box({
         hexpand: true,
         className: 'spacing-h-5 bar-spaceright',
         children: [
@@ -74,7 +73,7 @@ export default (monitor = 0) => {
     });
 
     let scrollCursorX, scrollCursorY;
-    return Widget.EventBox({
+    return eventBox({
         onScrollUp: (self, event) => {
             if (!Audio.speaker) return;
             let _;
@@ -96,10 +95,10 @@ export default (monitor = 0) => {
             if (distance(cursorX, cursorY, scrollCursorX, scrollCursorY) >= OSD_DISMISS_DISTANCE)
                 Indicator.popup(-1);
         }),
-        child: Widget.Box({
+        child: box({
             children: [
                 actualContent,
-                SpaceRightInteractions(Widget.Box({ className: 'bar-corner-spacing' })),
+                SpaceRightInteractions(box({ className: 'bar-corner-spacing' })),
             ]
         })
     });

@@ -1,11 +1,11 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+// import Widget from 'resource:///com/github/Aylur/ags/widget.js'; // To be removed
 import Indicator from '../../services/indicator.js';
 import IndicatorValues from './indicatorvalues.js';
 import MusicControls from './musiccontrols.js';
 import ColorScheme from './colorscheme.js';
 import NotificationPopups from './notificationpopups.js';
 
-export default (monitor = 0) => Widget.Window({
+export default (monitor = 0) => window({
     name: `indicator${monitor}`,
     monitor,
     className: 'indicator',
@@ -13,11 +13,11 @@ export default (monitor = 0) => Widget.Window({
     // exclusivity: 'ignore',
     visible: true,
     anchor: ['top'],
-    child: Widget.EventBox({
+    child: eventBox({
         onHover: () => { //make the widget hide when hovering
             Indicator.popup(-1);
         },
-        child: Widget.Box({
+        child: box({
             vertical: true,
             className: 'osd-window',
             css: 'min-height: 2px;',
