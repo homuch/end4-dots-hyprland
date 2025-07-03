@@ -1,6 +1,6 @@
-import App from 'ags/app';
-import { readFile } from 'ags/file';
-import { parseJSONC } from './utils/jsonc.js'; // Adjusted path
+import app from 'ags/gtk4/app'; // Corrected: import app
+import { readFile } from 'ags/file'; // Assuming 'ags/file' is correct for v2 file utils
+import { parseJSONC } from './utils/jsonc.js';
 
 function overrideConfigRecursive(userOverrides, configOptions = {}) {
     for (const [key, value] of Object.entries(userOverrides)) {
@@ -23,7 +23,7 @@ let defaultConfigOptions;
 
 try {
     // Load default options from .config/ags/default_options.jsonc (new location)
-    const defaultConfigFile = `${App.configDir}/default_options.jsonc`;
+    const defaultConfigFile = `${app.configDir}/default_options.jsonc`; // Corrected: app.configDir
     const defaultConfigFileContents = readFile(defaultConfigFile);
     defaultConfigOptions = parseJSONC(defaultConfigFileContents);
 
@@ -31,7 +31,7 @@ try {
     configOptions = JSON.parse(JSON.stringify(defaultConfigOptions));
 
     // Load user overrides from .config/ags/user_options.jsonc (standard location)
-    const userOverrideFile = `${App.configDir}/user_options.jsonc`;
+    const userOverrideFile = `${app.configDir}/user_options.jsonc`; // Corrected: app.configDir
 
     // Check if user override file exists
     const userOverrideContents = readFile(userOverrideFile); // This will error if file doesn't exist

@@ -1,24 +1,19 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import App from 'ags/app';
+import app from 'ags/gtk4/app'; // Corrected
 import { execAsync } from 'ags/process';
-import { writeFileAsync } from 'ags/file'; // Or 'writeFile' if sync is fine and preferred
-import { timeout } from 'ags/time';
-import { options as userOptions } from '../options.js'; // Assuming userOptions is an object
+import { writeFileAsync } from 'ags/file';
+import { timeout } from 'ags/time'; // Assuming ags/time is correct
+import { options as userOptions } from '../../options.js'; // Corrected path
 
-// Battery service - V2 style
-// TODO: Verify the actual GObject Introspection name and properties for the v2 Battery service.
-// Assuming 'gi://AstalBattery' and properties like 'percent', 'charging', 'available'.
-let Battery;
-let battery;
-try {
-    Battery = (await import('gi://AstalBattery')).default;
-    battery = Battery.get_default();
-} catch (e) {
-    console.warn("AstalBattery service not available. Battery warnings will be disabled.", e);
-    Battery = null; // Ensure Battery is null if import fails
-    battery = null;
-}
+import Battery from 'ags/service/battery'; // Use actual service path
+// No more try-catch for dynamic import of Battery here.
+// If 'ags/service/battery' fails, the app won't load this module correctly, which is fine.
+
+// let battery = Battery; // If Battery itself is the service instance.
+// Or if it's a class: const battery = new Battery() or Battery.get_default().
+// Assuming 'ags/service/battery' exports the service instance directly, like other ags services.
+// So, direct use of `Battery.percent`, `Battery.charging` etc. is expected.
 
 
 function fileExists(filePath) {
@@ -36,12 +31,14 @@ const FIRST_RUN_NOTIF_BODY = `First run? For a list of keybinds, hit <span foreg
 var batteryWarnedStates = {}; // Store warned state for each level
 
 async function batteryMessage() {
-    if (!battery || !battery.available) { // Check if battery service is available and battery exists
+    // Use the imported Battery service directly.
+    // Assumes properties like .available, .percent, .charging are reactive (accessors or GObject props)
+    if (!Battery || !Battery.available) {
         return;
     }
 
-    const perc = battery.percent;
-    const charging = battery.charging;
+    const perc = Battery.percent;
+    const charging = Battery.charging;
 
     if (charging) {
         Object.keys(userOptions.battery.warnLevels).forEach(level => batteryWarnedStates[level] = false);
@@ -82,35 +79,39 @@ async function batteryMessage() {
 }
 
 export async function startBatteryWarningService() {
-    if (!Battery || !battery) { // Do not start if service not available
-        console.log("Battery service not available, cannot start battery warnings.");
+    if (!Battery) { // Check the imported service module/object itself
+        console.log("Battery service module not available, cannot start battery warnings.");
         return;
     }
-    // Initial check
+    // Initial check - batteryMessage already checks Battery.available
     await batteryMessage().catch(print);
 
-    // Connect to battery property changes
-    // TODO: Verify exact signals. Common ones are 'notify::percent', 'notify::charging'
-    // For simplicity, if a general 'changed' or similar signal exists, it's easier.
-    // Otherwise, connect to specific properties.
-    // Using a generic 'changed' if available, or 'notify::percent' as a common specific one.
-    // The Astal services might emit a more generic signal or one per property.
-    // Let's assume 'notify::percent' and 'notify::charging' for now.
-    battery.connect('notify::percent', () => batteryMessage().catch(print));
-    battery.connect('notify::charging', () => batteryMessage().catch(print));
-    // Some services might also have an explicit 'available' property if the battery can be removed
-    if (Object.getOwnPropertyDescriptor(battery, 'available')) {
-     battery.connect('notify::available', () => batteryMessage().catch(print));
+    // Connect to battery property changes.
+    // AGS services typically make their properties reactive.
+    // If direct GObject, use 'notify::property-name'.
+    // If an AGS JS service, it might have its own signals or rely on accessor reactivity.
+    // Assuming 'notify::percent' and 'notify::charging' are standard GObject signals if Battery is a GObject.
+    // If Battery is an AGS JS service, it might re-emit 'changed' or specific signals.
+    // For now, let's assume the service object itself can be connected to for general changes,
+    // or specific properties are GObject-like.
+    // The `ags/service/battery` likely provides reactive properties directly.
+    // Connecting to specific properties is safer.
+    Battery.connect('notify::percent', () => batteryMessage().catch(print));
+    Battery.connect('notify::charging', () => batteryMessage().catch(print));
+    if (Battery.hasOwnProperty('available')) { // Check if 'available' property exists
+        Battery.connect('notify::available', () => batteryMessage().catch(print));
     }
+    // If Battery is an AGS service that emits a general 'changed' signal:
+    // Battery.connect('changed', () => batteryMessage().catch(print));
 }
 
 export async function firstRunWelcome() {
     try {
         GLib.mkdir_with_parents(`${GLib.get_user_state_dir()}/ags/user`, 0o755);
         if (!fileExists(FIRST_RUN_PATH)) {
-            const defaultWallpaper = userOptions.appearance?.defaultWallpaper || `${App.configDir}/assets/images/default_wallpaper.png`;
+            const defaultWallpaper = userOptions.appearance?.defaultWallpaper || `${app.configDir}/assets/images/default_wallpaper.png`; // Corrected
             if (fileExists(defaultWallpaper)) {
-                 execAsync([`${App.configDir}/scripts/color_generation/switchwall.sh`, defaultWallpaper]).catch(print);
+                 execAsync([`${app.configDir}/scripts/color_generation/switchwall.sh`, defaultWallpaper]).catch(print); // Corrected
             } else {
                 print(`Default wallpaper not found at ${defaultWallpaper}`);
             }

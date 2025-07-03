@@ -1,9 +1,8 @@
-import Gtk from 'gi://Gtk?version=4.0';
-import Gdk from 'gi://Gdk'; // For Gdk.EventControllerMotion if used, or Gdk.EVENT_STOP etc.
-import { box, label, button, spinbutton as AgsSpinButton, eventbox } from 'ags/widgets'; // AgsSpinButton
-import { createState, createEffect, Utils } from 'ags';
+import { Gtk, Gdk } from 'ags/gtk4'; // Corrected imports
+// Intrinsics: <box>, <label>, <button>, <spinbutton>
+import { createState, createEffect, Utils } from 'ags'; // Utils for timeout if onReset/fetchValue use it
 import MaterialIcon from './MaterialIcon.js';
-import { setupCursorHover, setupCursorHoverHResize } from '../../utils/cursorHover.js'; // setupCursorHoverHResize for drag area
+import { setupCursorHover, setupCursorHoverHResize } from '../../utils/cursorHover.js';
 
 export default function ConfigSpinButton({
     icon,
@@ -12,20 +11,19 @@ export default function ConfigSpinButton({
     initialValue = 0,
     minValue = 0,
     maxValue = 100,
-    step = 1,
+    step = 1, // step for arrow keys
+    pageIncrement = 5, // step for page up/down or larger scroll
     expandWidget = true,
     resetButton = false,
-    scrubRatio = 1 / 20, // From original, pixels dragged per unit value change
-    roundValue = true, // Whether to round value during scrub
-    onChange = (newValue) => {}, // (newValue: number) => void
-    // extraSetup for the root box
-    onReset = async () => {}, // Should return new value or rely on fetchValue
-    fetchValue = () => initialValue, // Function to get the default/reset value
+    scrubRatio = 1 / 20,
+    roundValue = true,
+    onChange = (newValue) => {},
+    onReset = async () => {},
+    fetchValue = () => initialValue,
     className = '',
-    // For controlled component behavior
-    value_accessor,     // Optional: Pass an accessor for external state control
-    onValueChange_handler, // Optional: If controlled, this is like `setEnabled` for ConfigToggle
-    ...rest
+    value_accessor,
+    onValueChange_handler,
+    ...rest // Props for the root <box>
 }) {
     const isControlled = !!value_accessor;
     const [_internalValue, _setInternalValue] = createState(initialValue);
@@ -38,7 +36,7 @@ export default function ConfigSpinButton({
         } else {
             newValue = val_or_func;
         }
-        newValue = Math.max(minValue, Math.min(maxValue, newValue)); // Clamp
+        newValue = Math.max(minValue, Math.min(maxValue, Number(newValue))); // Clamp and ensure number
         if (roundValue) newValue = Math.round(newValue);
 
         if (isControlled) {
@@ -46,82 +44,95 @@ export default function ConfigSpinButton({
         } else {
             _setInternalValue(newValue);
         }
-        onChange(newValue); // Call general onChange for both controlled/uncontrolled
+        onChange(newValue);
     };
 
-    // Ensure spinbutton UI reflects state changes if controlled externally
     const spinButtonRef = { widget: null };
     createEffect(() => {
-        if (spinButtonRef.widget && currentValue.value !== spinButtonRef.widget.value) {
-            spinButtonRef.widget.value = currentValue.value;
+        if (spinButtonRef.widget && currentValue.value !== spinButtonRef.widget.get_value_as_int()) { // Gtk.SpinButton method
+             // Gtk.SpinButton value is float, but often treated as int if digits=0
+            spinButtonRef.widget.set_value(currentValue.value);
+        }
+    }, [currentValue]);
+
+    // Prepare Gtk.Adjustment for the spinbutton
+    const adjustment = Gtk.Adjustment.new(currentValue.value, minValue, maxValue, step, pageIncrement, 0);
+    // Bind adjustment value back to our state if it changes from spinbutton UI interaction
+    adjustment.connect('value-changed', () => {
+        const adjValue = adjustment.get_value();
+        if (adjValue !== currentValue.value) {
+            setValue(adjValue);
+        }
+    });
+    // Also update adjustment if our state changes (e.g. from scrubbing or external control)
+    createEffect(() => {
+        if(adjustment.get_value() !== currentValue.value) {
+            adjustment.set_value(currentValue.value);
         }
     }, [currentValue]);
 
 
-    const spinBtn = AgsSpinButton({
-        className: 'spinbutton', // Ensure SCSS
-        range: [minValue, maxValue],
-        increments: [step, step], // [step, pageIncrement]
-        value: currentValue.value, // Initial value
-        on_value_changed: (sb) => { // Signal when spinbutton's value changes by user or programmatically
-            // Avoid feedback loop if programmatically setting due to currentValue effect
-            if (sb.value !== currentValue.value) {
-                 setValue(sb.value);
-            }
-        },
-        setup: self => spinButtonRef.widget = self,
-    });
+    const spinBtn = (
+        <spinbutton
+            // class='spinbutton' // Already part of Gtk.SpinButton's style context
+            adjustment={adjustment}
+            digits={0} // Assuming integer values mostly, can be prop if float needed
+            value={currentValue.value} // Initial value
+            // on_value_changed is complex with Gtk.Adjustment. Handle via adjustment 'value-changed'.
+            // Or, if Ags <spinbutton> has simpler onChange:
+            // onChange={({value}) => setValue(value)}
+            $={self => spinButtonRef.widget = self}
+        />
+    );
 
-    const widgetContent = box({
-        tooltipText: desc,
-        className: `config-spinbutton-content ${className} txt spacing-h-5`, // Ensure SCSS
-        children: [
-            ...(icon ? [MaterialIcon({ icon, size: 'norm', vpack: 'center' })] : []),
-            ...(name ? [label({ className: 'txt txt-small', label: name, vpack: 'center' })] : []),
-            ...(expandWidget ? [box({ hexpand: true })] : []),
-            spinBtn,
-        ]
-    });
+    const widgetContent = (
+        <box
+            tooltipText={desc}
+            class={`config-spinbutton-content ${className} txt spacing-h-5`}
+        >
+            {icon && <MaterialIcon icon={icon} size='norm' vpack={Gtk.Align.CENTER} />}
+            {name && <label class='txt txt-small' label={name} vpack={Gtk.Align.CENTER} />}
+            {expandWidget && <box hexpand={true} />}
+            {spinBtn}
+        </box>
+    );
 
-    // EventBox for drag scrubbing (original wrapped the whole thing)
-    const scrubEventBox = eventbox({
-        child: widgetContent,
-        setup: (self) => {
-            setupCursorHoverHResize(self); // Change cursor on hover
-            const gesture = Gtk.GestureDrag.new();
-            let gestureValueOnDragBegin = 0;
+    return (
+        <box
+            {...rest}
+            class={`config-spinbutton-box-outer spacing-h-5 ${rest.class || ''}`}
+        >
+            <box $={self => { // This box will get the drag gesture
+                setupCursorHoverHResize(self);
+                const gesture = Gtk.GestureDrag.new();
+                let gestureValueOnDragBegin = 0;
 
-            gesture.connect('drag-begin', (g) => {
-                gestureValueOnDragBegin = currentValue.value;
-                g.set_state(Gtk.EventSequenceState.CLAIMED); // Claim the drag
-            });
-            gesture.connect('drag-update', (g) => {
-                const [offsetX, offsetY] = g.get_offset(); // [dx, dy] from start point
-                let newValue = gestureValueOnDragBegin + (offsetX * scrubRatio);
-                // Clamping and rounding is handled by setValue
-                setValue(newValue);
-            });
-            // No 'drag-end' needed if value is updated continuously
-            self.add_controller(gesture);
-        }
-    });
-
-    return box({
-        ...rest,
-        className: `config-spinbutton-box-outer spacing-h-5 ${props.className || ''}`,
-        children: [
-            scrubEventBox,
-            ...(resetButton ? [button({
-                className: 'configtoggle-reset spinbutton-reset', // Ensure SCSS
-                onClicked: async () => {
-                    // onReset might do async things, then fetchValue gets the actual default.
-                    await onReset();
-                    const fetchedDefValue = await fetchValue(); // Ensure fetchValue can be async if needed
-                    setValue(fetchedDefValue);
-                },
-                child: MaterialIcon({ icon: 'settings_backup_restore', size: 'small' }),
-                setup: setupCursorHover,
-            })] : []),
-        ]
-    });
+                gesture.connect('drag-begin', (g) => {
+                    gestureValueOnDragBegin = currentValue.value;
+                    g.set_state(Gtk.EventSequenceState.CLAIMED);
+                });
+                gesture.connect('drag-update', (g) => {
+                    const [offsetX, offsetY] = g.get_offset();
+                    let newValue = gestureValueOnDragBegin + (offsetX * scrubRatio);
+                    setValue(newValue);
+                });
+                self.add_controller(gesture);
+            }}>
+                {widgetContent}
+            </box>
+            {resetButton && (
+                <button
+                    class='configtoggle-reset spinbutton-reset'
+                    onClicked={async () => {
+                        await onReset();
+                        const fetchedDefValue = await fetchValue();
+                        setValue(fetchedDefValue);
+                    }}
+                    $={setupCursorHover}
+                >
+                    <MaterialIcon icon='settings_backup_restore' size='small' />
+                </button>
+            )}
+        </box>
+    );
 }

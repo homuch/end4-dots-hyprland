@@ -1,5 +1,5 @@
 import { execAsync } from 'ags/process';
-import Hyprland from '../services/hyprlandService.js'; // Using placeholder/migrated service
+import Hyprland from 'ags/service/hyprland'; // Corrected
 
 function moveClientToWorkspace(address, workspaceId) {
     // Original used: `hyprctl dispatch movetoworkspacesilent ${workspace},address:${address} &`

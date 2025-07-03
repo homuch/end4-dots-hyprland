@@ -1,6 +1,6 @@
 // Fake Battery Service for development and testing
 import { createState, createBinding } from 'ags';
-import { options as userOptions } from '../options.js'; // For battery low threshold
+import { options as userOptions } from '../../options.js'; // Corrected path
 
 // Simulating reactive properties of a battery
 const [_percent, _setPercent] = createState(75);

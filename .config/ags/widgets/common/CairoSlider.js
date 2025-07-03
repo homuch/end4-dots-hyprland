@@ -1,8 +1,7 @@
-import Gtk from 'gi://Gtk?version=4.0';
-import Gdk from 'gi://Gdk'; // For Gdk.RGBA
+import { Gtk, Gdk } from 'ags/gtk4'; // Corrected imports
 import Cairo from 'gi://cairo';
-import { drawingarea } from 'ags/widgets';
-import { createEffect, createState } from 'ags'; // For internal animation or reacting to value_accessor
+// No import for <drawingarea>
+import { createEffect, createState } from 'ags';
 
 // Default styling parameters (can be overridden by CSS for the drawingarea)
 const DEFAULT_SLIDER_HEIGHT = 10; // If horizontal
@@ -91,20 +90,19 @@ export default function CairoSlider({
         }
     };
 
-    return drawingarea({
-        ...props,
-        className: `cairo-slider ${className} ${vertical ? 'vertical' : 'horizontal'}`,
-        drawFn: drawFn,
-        setup: (self) => {
-            // Ensure CSS provides min-width/min-height for the drawing area
-            // Or set a default size_request here if CSS doesn't handle it.
-            // self.set_size_request(vertical ? DEFAULT_SLIDER_WIDTH : 100, vertical ? 100 : DEFAULT_SLIDER_HEIGHT);
-
-            if (value_accessor) {
-                createEffect(() => {
-                    self.queue_draw();
-                }, [value_accessor]);
-            }
-        }
-    });
+    return (
+        <drawingarea
+            {...props}
+            class={`cairo-slider ${className} ${vertical ? 'vertical' : 'horizontal'}`}
+            drawFn={drawFn}
+            $={self => { // Use $ for setup
+                if (value_accessor) {
+                    createEffect(() => {
+                        self.queue_draw();
+                    }, [value_accessor]);
+                }
+                // Ensure CSS provides min-width/min-height or set size_request if needed
+            }}
+        />
+    );
 }

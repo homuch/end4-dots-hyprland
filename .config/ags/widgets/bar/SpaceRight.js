@@ -1,146 +1,138 @@
-import App from 'ags/app';
-import Gtk from 'gi://Gtk?version=4.0';
-import Gdk from 'gi://Gdk';
-import { box, revealer, eventbox } from 'ags/widgets';
+import { app } from 'ags/gtk4/app'; // Corrected
+import { Gtk, Gdk } from 'ags/gtk4'; // Corrected
+// Intrinsics: <box>, <revealer>
 import { createBinding, createEffect, createState } from 'ags';
 import { execAsync } from 'ags/process';
 
-import Audio from '../../services/audioService.js'; // Placeholder
-import Indicator from '../../services/indicatorService.js'; // Placeholder
-// TODO: import SystemTray from 'gi://SystemTray'; // Or actual v2 service name
-// For now, using a fake SystemTray service
-const FakeSystemTray = {
-    _items: createState([]), // Array of fake tray item objects
-    get items() { return this._items[0]; }, // Accessor
-    addItem: (item) => FakeSystemTray._items[1](current => [...current, item]),
-    removeItem: (id) => FakeSystemTray._items[1](current => current.filter(it => it.id !== id)),
-    connect: (signal, callback) => { /* console.log(`FakeSystemTray: connect to ${signal}`); */ }
-};
-const SystemTray = FakeSystemTray;
-// globalThis.fst = FakeSystemTray; fst.addItem({id: 'test1', icon: 'firefox'});
+import Audio from 'ags/service/audio'; // Corrected import
+import Indicator from '../../services/indicatorService.js';
+import SystemTray from 'ags/service/systemtray';
+import { options as userOptions } from '../../options.js';
 
-import { distance } from '../../utils/mathfuncs.js';
+// import { distance } from '../../utils/mathfuncs.js'; // Not used if motion dismiss removed
 
-// Placeholders for sub-components that need migration
-const PlaceholderWidget = (name, props = {}) => box({ ...props, children: [Gtk.Label.new(`PH: ${name}`)]}); // Direct Gtk.Label
-import Tray from './Tray.js'; // Import actual Tray component
-import StatusIcons from '../../common/StatusIcons.js'; // Import actual component
+import Tray from './Tray.js';
+import StatusIcons from '../../common/StatusIcons.js';
+import { setupCursorHover } from '../../utils/cursorHover.js'; // For hover on interactions area
+
+// const OSD_DISMISS_DISTANCE = userOptions.osd?.dismissDistance || 10;
+
+const SeparatorDot = () => (
+    <revealer
+        transition={Gtk.RevealerTransitionType.SLIDE_LEFT}
+        revealChild={SystemTray.items.transform(items => items.length > 0)}
+    >
+        <box vpack={Gtk.Align.CENTER} class='separator-circle' />
+    </revealer>
+);
+
+// SpaceRightInteractions becomes a functional component applying controllers/signals
+const InteractiveSection = ({ children, onHover, onHoverLost, onPrimaryClick, onSecondaryClick, onMiddleClick, onButton8Press }) => (
+    // Replace eventbox with box + gestures/controllers
+    <box
+        hexpand={children ? false : true} // Expand if it's an empty spacer area
+        $={self => {
+            if (onHover || onHoverLost) {
+                const hoverCtrl = Gtk.EventControllerMotion.new();
+                if(onHover) hoverCtrl.connect('enter', onHover);
+                if(onHoverLost) hoverCtrl.connect('leave', onHoverLost);
+                self.add_controller(hoverCtrl);
+            }
+            if (onPrimaryClick || onSecondaryClick || onMiddleClick || onButton8Press) {
+                const clickCtrl = Gtk.EventControllerGesture.new();
+                clickCtrl.set_button(0); // Listen for all buttons
+                clickCtrl.connect('pressed', (gesture, nPress, x, y) => {
+                    const button = gesture.get_current_button();
+                    if (button === Gdk.BUTTON_PRIMARY && onPrimaryClick) onPrimaryClick();
+                    else if (button === Gdk.BUTTON_SECONDARY && onSecondaryClick) onSecondaryClick();
+                    else if (button === Gdk.BUTTON_MIDDLE && onMiddleClick) onMiddleClick();
+                    else if (button === 8 && onButton8Press) onButton8Press(); // Button 8 for side mouse
+                });
+                self.add_controller(clickCtrl);
+            }
+            setupCursorHover(self); // General pointer cursor for interactive areas
+        }}
+    >
+        {children}
+    </box>
+);
 
 
-const OSD_DISMISS_DISTANCE = 10; // As in original
+// SpaceRight expects gdkmonitor prop (passed as monitor in original, now gdkmonitor)
+export default function SpaceRight({ gdkmonitor }) {
+    const monitorId = gdkmonitor.get_monitor_number();
 
-const SeparatorDot = () => revealer({
-    transition: Gtk.RevealerTransitionType.SLIDE_LEFT,
-    // revealChild: false, // Initial state, will be bound
-    child: box({
-        vpack: 'center',
-        className: 'separator-circle', // Ensure this class exists in SCSS
-    }),
-    // Bind revealChild to the number of tray items
-    revealChild: SystemTray.items.transform(items => items.length > 0),
-});
+    const barStatusIconsRef = { widget: null }; // To toggle class from InteractiveSection
 
-export default function SpaceRight({ monitor = 0 } = {}) {
-    const barTray = Tray(); // Placeholder Tray widget
-    const barStatusIcons = StatusIcons({ // Placeholder StatusIcons widget
-        className: 'bar-statusicons', // Base class
-        // Setup for sideright active class
-        $: (self) => {
-            App.connect('window-toggled', (app, windowName, visible) => {
-                if (windowName === 'sideright') { // Assuming 'sideright' is the name
-                    self.toggleClassName('bar-statusicons-active', visible);
-                }
-            });
-        }
-    }, monitor);
+    const actualContent = (
+        <box hexpand={true} class='spacing-h-5 bar-spaceright'>
+            <InteractiveSection onHover={() => barStatusIconsRef.widget?.toggleClassName('bar-statusicons-hover', true)}
+                                 onHoverLost={() => barStatusIconsRef.widget?.toggleClassName('bar-statusicons-hover', false)}
+                                 onPrimaryClick={() => app.toggleWindow('sideright')}
+                                 onSecondaryClick={() => execAsync(['bash', '-c', 'playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"` &']).catch(print)}
+                                 onMiddleClick={() => execAsync('playerctl play-pause').catch(print)}
+                                 onButton8Press={() => execAsync('playerctl previous').catch(print)}
+            >
+                {/* This box is the empty expanding area */}
+                <box hexpand={true}/>
+            </InteractiveSection>
 
-    const SpaceRightInteractions = ({ children }) => eventbox({
-        onHover: () => barStatusIcons.toggleClassName('bar-statusicons-hover', true),
-        onHoverLost: () => barStatusIcons.toggleClassName('bar-statusicons-hover', false),
-        onPrimaryClick: () => App.toggleWindow('sideright'),
-        onSecondaryClick: () => execAsync(['bash', '-c', 'playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"` &']).catch(print),
-        onMiddleClick: () => execAsync('playerctl play-pause').catch(print),
-        setup: (self) => { // For side mouse buttons (button 8)
-            const controller = Gtk.EventControllerGesture.new();
-            controller.set_button(0); // Listen for all buttons
-            controller.connect('pressed', (gesture, nPress, x, y) => {
-                if (gesture.get_current_button() === 8) { // 8 is often a side button (back)
-                    execAsync('playerctl previous').catch(print);
-                }
-            });
-            self.add_controller(controller);
+            <Tray />
 
-            // OSD dismiss on motion - this was on SpaceRightInteractions in v1
-            // This is problematic as explained in SpaceLeft.js.
-            // Indicator.popup(-1) should ideally be managed by a timeout within IndicatorService.
-            // self.connect('motion-notify-event', (widget, event) => {
-            // Indicator.popup(-1);
-            // });
-        },
-        child: children,
-    });
+            <InteractiveSection onHover={() => barStatusIconsRef.widget?.toggleClassName('bar-statusicons-hover', true)}
+                                 onHoverLost={() => barStatusIconsRef.widget?.toggleClassName('bar-statusicons-hover', false)}
+                                 onPrimaryClick={() => app.toggleWindow('sideright')}
+                                 onSecondaryClick={() => execAsync(['bash', '-c', 'playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"` &']).catch(print)}
+                                 onMiddleClick={() => execAsync('playerctl play-pause').catch(print)}
+                                 onButton8Press={() => execAsync('playerctl previous').catch(print)}
+            >
+                <box class="spacing-h-5"> {/* Inner box for separator and status icons */}
+                    <SeparatorDot />
+                    <StatusIcons
+                        class='bar-statusicons'
+                        monitor={monitorId} // Pass monitorId if StatusIcons needs it
+                        $={self => {
+                            barStatusIconsRef.widget = self; // Store ref
+                            app.connect('window-toggled', (appInstance, windowName, visible) => {
+                                if (windowName === 'sideright') {
+                                    self.toggleClassName('bar-statusicons-active', visible);
+                                }
+                            });
+                        }}
+                    />
+                </box>
+            </InteractiveSection>
+        </box>
+    );
 
-    const emptyArea = SpaceRightInteractions({ children: [box({ hexpand: true })] });
-    const indicatorArea = SpaceRightInteractions({
-        children: [
-            box({ // Inner box for spacing or structure
-                children: [
-                    SeparatorDot(),
-                    barStatusIcons
-                ]
-            })
-        ]
-    });
-
-    const actualContent = box({
-        hexpand: true,
-        className: 'spacing-h-5 bar-spaceright', // Ensure SCSS has styles
-        children: [
-            emptyArea,
-            barTray,
-            indicatorArea
-        ],
-    });
-
-    let scrollCursorX = 0; // These are not reliably set for OSD dismiss logic
-    let scrollCursorY = 0;
-
-    return eventbox({
-        onScrollUp: (self, event) => {
-            if (!Audio.speaker) return Gdk.EVENT_PROPAGATE;
-            // const [success, x, y] = event.get_position(); // Gdk.ScrollEvent method
-            // if(success) { scrollCursorX = x; scrollCursorY = y; }
-
-            const currentVolume = Audio.speaker.volume;
-            if (currentVolume <= 0.09) Audio.speaker.volume += 0.01;
-            else Audio.speaker.volume += 0.03;
-            Indicator.popup(1); // Show OSD
-            return Gdk.EVENT_STOP;
-        },
-        onScrollDown: (self, event) => {
-            if (!Audio.speaker) return Gdk.EVENT_PROPAGATE;
-            // const [success, x, y] = event.get_position();
-            // if(success) { scrollCursorX = x; scrollCursorY = y; }
-
-            const currentVolume = Audio.speaker.volume;
-            if (currentVolume <= 0.09) Audio.speaker.volume -= 0.01; // Ensure it doesn't go far below 0 if step is large
-            else Audio.speaker.volume -= 0.03;
-            Indicator.popup(1); // Show OSD
-            return Gdk.EVENT_STOP;
-        },
-        setup: (self) => {
-            // OSD dismiss on motion - same issue as in SpaceLeft.js and SpaceRightInteractions
-            // self.connect('motion-notify-event', (widget, event) => {
-            //     const [x, y] = event.get_coords_for_surface(self.get_surface()); // Example for Gdk.Event from motion
-            //     if (distance(x, y, scrollCursorX, scrollCursorY) >= OSD_DISMISS_DISTANCE)
-            //         Indicator.popup(-1);
-            // });
-        },
-        child: box({
-            children: [
-                actualContent,
-                SpaceRightInteractions({ children: [box({ className: 'bar-corner-spacing' })] }), // For styling
-            ]
-        })
-    });
+    return (
+        // Root box replacing EventBox, handles volume scroll
+        <box
+            class='spaceright-root-eventbox' // Add class for potential styling
+            $={self => {
+                const scrollController = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL);
+                scrollController.connect('scroll', (controller, dx, dy) => {
+                    if (!Audio.speaker) return Gdk.EVENT_PROPAGATE;
+                    const currentVolume = Audio.speaker.volume; // Assuming Audio.speaker.volume is reactive or get/set works
+                    let newVolume;
+                    if (dy < 0) { // Scroll Up - Increase Volume
+                        newVolume = currentVolume <= 0.09 ? currentVolume + 0.01 : currentVolume + 0.03;
+                    } else { // Scroll Down - Decrease Volume
+                        newVolume = currentVolume <= 0.09 ? currentVolume - 0.01 : currentVolume - 0.03;
+                    }
+                    Audio.speaker.volume = Math.max(0, Math.min(1, newVolume)); // Clamp and set
+                    Indicator.popup(1); // Show OSD (type 1 for volume/brightness)
+                    return Gdk.EVENT_STOP;
+                });
+                self.add_controller(scrollController);
+            }}
+        >
+            <box> {/* Original structure had another box here */}
+                {actualContent}
+                <InteractiveSection onPrimaryClick={() => app.toggleWindow('sideright')}> {/* Corner spacing, make it clickable */}
+                    <box class='bar-corner-spacing' />
+                </InteractiveSection>
+            </box>
+        </box>
+    );
 }

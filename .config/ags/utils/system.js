@@ -1,8 +1,8 @@
 import { createState } from 'ags';
-import { readFile, readFileAsync } from 'ags/file'; // Using readFile for initial, consider readFileAsync if it causes startup lag
+import { readFile, readFileAsync } from 'ags/file';
 import { exec, execAsync } from 'ags/process';
 import GLib from 'gi://GLib';
-import App from 'ags/app';
+import app from 'ags/gtk4/app'; // Corrected
 
 export const distroID = exec(`bash -c 'cat /etc/os-release | grep "^ID=" | cut -d "=" -f 2 | sed "s/\\"//g"'`).trim();
 export const isDebianDistro = (distroID === 'linuxmint' || distroID === 'ubuntu' || distroID === 'debian' || distroID === 'zorin' || distroID === 'popos' || distroID === 'raspbian' || distroID === 'kali');
@@ -37,7 +37,7 @@ export function setDarkMode(newIsDark) {
     execAsync(['bash', '-c', `mkdir -p ${GLib.get_user_state_dir()}/ags/user && echo '${lightdark}' > ${LIGHTDARK_FILE_LOCATION}`])
         .then(() => {
             // Check if script exists before trying to execute
-            const scriptPath = `${App.configDir}/scripts/color_generation/switchcolor.sh`;
+            const scriptPath = `${app.configDir}/scripts/color_generation/switchcolor.sh`; // Corrected
             return execAsync(['bash', '-c', `test -f ${scriptPath} && ${scriptPath}`]);
         })
         .then(() => execAsync(['bash', '-c', `command -v darkman && darkman set ${lightdark}`]))

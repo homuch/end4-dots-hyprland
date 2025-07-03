@@ -1,12 +1,12 @@
 import GLib from 'gi://GLib';
-import App from 'ags/app';
+import app from 'ags/gtk4/app'; // Corrected import
 import { exec, execAsync } from 'ags/process';
-import { options as userOptions, defaultOptions as userOptionsDefaults } from '../../../options.js'; // Corrected path
+import { options as userOptions, defaultOptions as userOptionsDefaults } from '../../../options.js';
 import { getNestedProperty, updateNestedProperty } from '../../../utils/objectUtils.js'; // Corrected path
 import ConfigToggle from './ConfigToggle.js';
 import ConfigSpinButton from './ConfigSpinButton.js';
 
-const AGS_CONFIG_FILE = `${App.configDir}/user_options.jsonc`;
+const AGS_CONFIG_FILE = `${app.configDir}/user_options.jsonc`; // Corrected: app.configDir
 // Path to a script assumed to exist for manipulating general hyprland config values by key
 const HYPRLAND_GENERAL_CONFIG_FILE = `${GLib.get_user_config_dir()}/hypr/custom/general.conf`;
 // The original HyprlandToggle/SpinButton used a python script `hyprconfigurator.py`

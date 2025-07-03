@@ -1,7 +1,8 @@
-import Gtk from 'gi://Gtk?version=4.0';
+import { Gtk, Gdk } from 'ags/gtk4'; // Corrected imports
 import Cairo from 'gi://cairo';
-import { drawingarea } from 'ags/widgets';
-import { createEffect, createState } from 'ags'; // For internal animation if needed
+// No import for <drawingarea>
+import { createEffect, createState } from 'ags';
+import GLib from 'gi://GLib'; // For animation timeout if re-enabled
 
 // Default styling parameters (can be overridden by CSS)
 const DEFAULT_DIAMETER = 20;
@@ -128,31 +129,25 @@ export default function AnimatedCircularProgress({
         }
     };
 
-    return drawingarea({
-        ...props,
-        className: `animated-circular-progress ${className}`,
-        drawFn: drawFn,
-        setup: (self) => {
-            // Request redraw when display value changes
-            createEffect(() => {
-                self.queue_draw();
-            }, [currentDisplayValue]);
+    return (
+        <drawingarea
+            {...props}
+            class={`animated-circular-progress ${className}`}
+            drawFn={drawFn}
+            $={self => { // Use $ for setup
+                createEffect(() => {
+                    self.queue_draw();
+                }, [currentDisplayValue]);
 
-            // Initial size request based on CSS or defaults
-            const styleContext = self.get_style_context();
-            // This is difficult because CSS min-height/min-width are not direct properties
-            // and might not be resolved at setup time for size_request.
-            // Best to set a default size_request or ensure CSS provides dimensions.
-            // self.set_size_request(DEFAULT_DIAMETER, DEFAULT_DIAMETER);
-            // Or let CSS handle the size via .animated-circular-progress class
-
-            if (extraSetup && typeof extraSetup === 'function') {
-                extraSetup(self);
-            }
-        }
-    });
+                if (extraSetup && typeof extraSetup === 'function') {
+                    extraSetup(self);
+                }
+                // It's generally better to control size via CSS for drawing areas
+                // or explicitly pass width/height request as props if needed.
+            }}
+        />
+    );
 }
 
-// Need Gdk for RGBA and GLib for timeout if used
-import Gdk from 'gi://Gdk';
-import GLib from 'gi://GLib'; // For animation timeout if re-enabled
+// Gdk is imported with Gtk from ags/gtk4
+// GLib is imported at the top

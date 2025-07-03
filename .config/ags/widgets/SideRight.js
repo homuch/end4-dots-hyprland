@@ -15,23 +15,30 @@ import { options as userOptions } from '../../options.js';
 import { getDistroIcon } from '../../utils/system.js'; // Migrated
 
 // Placeholders for i18n and services/modules
-const getString = (str) => str;
+const getString = (str) => str; // TODO: i18n
 
-// --- Placeholders for Sub-Modules ---
-const PlaceholderModule = (name) => () => box({vexpand:true, hexpand:true, child: label({label: `${name} Placeholder`})});
-// Quick Toggles (individual toggles would be components)
-const QuickTogglesBox = () => box({ className: 'sidebar-togglesbox spacing-h-5', hpack: 'center', child: label({label: "Quick Toggles Placeholder"})});
-// Center Modules
-const ModuleNotificationList = PlaceholderModule("Notifications List");
-const ModuleAudioControls = PlaceholderModule("Audio Controls");
-const ModuleBluetooth = PlaceholderModule("Bluetooth Devices");
-const ModuleWifiNetworks = PlaceholderModule("WiFi Networks");
-const ModuleConfigure = PlaceholderModule("Quick Config");
-// Calendar
-const ModuleCalendar = PlaceholderModule("Calendar");
-// Specific toggle actions (from quicktoggles.js)
-const ModuleReloadIcon = ({hpack}) => button({hpack, child: MaterialIcon({icon:'refresh', size:'norm'}), onClicked: () => App.resetCss() & App.applyCss(`${App.configDir}/style.css`)}); // Simplified reload
-const ModulePowerIcon = ({hpack}) => button({hpack, child: MaterialIcon({icon:'power_settings_new', size:'norm'}), onClicked: () => App.toggleWindow('session0')}); // Assuming session0 for monitor 0
+// Import actual (placeholder) sub-modules
+import QuickTogglesBox from './sideright/QuickTogglesBox.js';
+import ModuleNotificationList from './sideright/centermodules/NotificationListDisplay.js';
+import ModuleAudioControls from './sideright/centermodules/AudioControlsDisplay.js';
+import ModuleBluetooth from './sideright/centermodules/BluetoothDisplay.js';
+import ModuleWifiNetworks from './sideright/centermodules/WifiNetworksDisplay.js';
+import ModuleConfigure from './sideright/centermodules/ConfigureDisplay.js';
+import ModuleCalendar from './sideright/CalendarDisplay.js';
+
+// Specific toggle actions (from quicktoggles.js - these could be part of QuickTogglesBox or separate small components)
+const ModuleReloadIcon = ({hpack}) => ( // Converted to JSX
+    <button hpack={hpack || Gtk.Align.CENTER} onClicked={() => { app.resetCss(); app.applyCss(`${COMPILED_STYLE_DIR}/style.css`);}} >
+        <MaterialIcon icon='refresh' size='norm'/>
+    </button>
+);
+const ModulePowerIcon = ({hpack}) => ( // Converted to JSX
+    <button hpack={hpack || Gtk.Align.CENTER} onClicked={() => app.toggleWindow('session0')} >
+        <MaterialIcon icon='power_settings_new' size='norm'/>
+    </button>
+);
+// Need COMPILED_STYLE_DIR for ModuleReloadIcon
+import { COMPILED_STYLE_DIR } from '../../../app.js'; // Path from widgets/sideright back to app.js
 
 
 const centerWidgetsData = [

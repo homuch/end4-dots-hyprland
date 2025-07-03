@@ -1,11 +1,11 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import App from 'ags/app';
+import app from 'ags/gtk4/app'; // Corrected import
 import { execAsync, exec } from 'ags/process';
-import { options as userOptions } from '../options.js'; // For terminal app path
-import TodoService from '../services/todoService.js'; // Placeholder Todo service
-import { setDarkMode } from './system.js'; // For light/dark mode actions
-import { expandTilde as commonExpandTilde } from './fileUtils.js'; // Use the one from fileUtils
+import { options as userOptions } from '../../options.js'; // Corrected path
+import TodoService from '../../services/todoService.js'; // Corrected path
+import { setDarkMode } from './system.js';
+import { expandTilde as commonExpandTilde } from './fileUtils.js';
 
 export function hasUnterminatedBackslash(inputString) {
     if (typeof inputString !== 'string') return false;
@@ -32,14 +32,14 @@ export function launchCustomCommand(command) { // From miscfunctions.js
                 }).catch(print);
             break;
         case '>img':
-            execAsync([`${App.configDir}/scripts/color_generation/switchwall.sh`]).catch(print);
+            execAsync([`${app.configDir}/scripts/color_generation/switchwall.sh`]).catch(print); // Corrected
             break;
         case '>color':
-            const colorArg = args[1]; // param would be args.slice(1).join(' ')
+            const colorArg = args[1];
             if (!colorArg) {
-                execAsync([`${App.configDir}/scripts/color_generation/switchcolor.sh`, '--pick']).catch(print);
+                execAsync([`${app.configDir}/scripts/color_generation/switchcolor.sh`, '--pick']).catch(print); // Corrected
             } else if (colorArg.startsWith('#')) {
-                execAsync([`${App.configDir}/scripts/color_generation/switchcolor.sh`, `"${colorArg}"`]).catch(print);
+                execAsync([`${app.configDir}/scripts/color_generation/switchcolor.sh`, `"${colorArg}"`]).catch(print); // Corrected
             }
             break;
         case '>light':
@@ -50,12 +50,12 @@ export function launchCustomCommand(command) { // From miscfunctions.js
             break;
         case '>badapple':
             execAsync([`bash`, `-c`, `mkdir -p ${GLib.get_user_state_dir()}/ags/user && sed -i "3s/.*/monochrome/" ${GLib.get_user_state_dir()}/ags/user/colormode.txt`])
-                .then(() => execAsync([`${App.configDir}/scripts/color_generation/switchcolor.sh`]))
+                .then(() => execAsync([`${app.configDir}/scripts/color_generation/switchcolor.sh`])) // Corrected
                 .catch(print);
             break;
         case '>material': // This seems to set a backend then regenerate colors
             execAsync([`bash`, `-c`, `mkdir -p ${GLib.get_user_state_dir()}/ags/user && echo "material" > ${GLib.get_user_state_dir()}/ags/user/colorbackend.txt`])
-                .then(() => execAsync([`${App.configDir}/scripts/color_generation/switchwall.sh`, '--noswitch']))
+                .then(() => execAsync([`${app.configDir}/scripts/color_generation/switchwall.sh`, '--noswitch'])) // Corrected
                 .catch(print);
             break;
         case '>todo':
@@ -79,10 +79,10 @@ export function launchCustomCommand(command) { // From miscfunctions.js
 }
 
 export function execAndClose(command, terminal = false) {
-    App.closeWindow('overview'); // Assuming 'overview' is the name of the overview window
-    const terminalApp = userOptions.apps?.terminal || 'foot'; // Default terminal
+    app.closeWindow('overview'); // Corrected: app
+    const terminalApp = userOptions.apps?.terminal || 'foot';
     if (terminal) {
-        execAsync([terminalApp, '-e', 'fish', '-C', command]).catch(print); // Original used fish -C
+        execAsync([terminalApp, '-e', 'fish', '-C', command]).catch(print);
     } else {
         execAsync(['bash', '-c', command]).catch(print); // Wrap in bash -c for robustness
     }

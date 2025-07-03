@@ -52,8 +52,8 @@ export default function ScreenCornerWindow({
 
 // Global logic for handling fakeScreenRounding option 2 (fullscreen behavior)
 // This should be initialized once in app.js or a dedicated service.
-import Hyprland from '../../services/hyprlandService.js'; // Import centralized service
-import Gdk from 'gi://Gdk'; // Ensure Gdk is imported for Display
+import Hyprland from 'ags/service/hyprland'; // Corrected
+import { Gdk } from 'ags/gtk4'; // Corrected Gdk import for Display
 
 export function manageFullscreenCorners() {
     if (userOptions.appearance?.fakeScreenRounding === 2) {

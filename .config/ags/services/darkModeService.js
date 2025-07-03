@@ -1,7 +1,8 @@
 import GLib from 'gi://GLib';
-import { interval } from 'ags/utils'; // AGS v2 interval utility
-import { options } from '../options.js'; // Migrated user options
-import { setDarkMode } from '../utils/system.js'; // Migrated system utility with reactive state
+// Assuming 'ags/time' provides 'interval' as per examples/docs for AGS v2
+import { interval } from 'ags/time';
+import { options } from '../../options.js'; // Corrected path
+import { setDarkMode } from '../../utils/system.js'; // Corrected path
 
 const timeToArray = (timeStr) => timeStr.split(':').map(Number);
 

@@ -1,11 +1,10 @@
-import Gtk from 'gi://Gtk?version=4.0';
-import Cairo from 'gi://cairo'; // Not explicitly imported in v1 but used by DrawingArea's cr
-import { drawingarea } from 'ags/widgets';
-// Utils.timeout isn't directly available. Setup ($) should be sufficient.
+import { Gtk } from 'ags/gtk4'; // Corrected: Import Gtk from ags/gtk4
+import Cairo from 'gi://cairo';
+// No import for <drawingarea> intrinsic from 'ags/widgets'
 
 export default function RoundedCorner({ place, ...props }) {
-    const getHPack = () => place.includes('left') ? 'start' : 'end';
-    const getVPack = () => place.includes('top') ? 'start' : 'end';
+    const getHPack = () => place.includes('left') ? Gtk.Align.START : Gtk.Align.END; // Use Gtk.Align
+    const getVPack = () => place.includes('top') ? Gtk.Align.START : Gtk.Align.END;   // Use Gtk.Align
 
     // Initial radius, will be updated in setup once styles are available
     let radius = 0;
@@ -65,33 +64,28 @@ export default function RoundedCorner({ place, ...props }) {
         // }
     };
 
-    return drawingarea({
-        ...props,
-        hpack: getHPack(),
-        vpack: getVPack(),
-        drawFn: drawFn,
-        setup: (self) => {
-            // Ensure styles are loaded and radius can be read.
-            // This might need a brief delay or run on 'realize' if style context isn't ready.
-            // Or, rely on CSS to give the drawingarea a size if radius isn't fixed.
-            // For now, assuming setup is late enough.
-            const styleContext = self.get_style_context();
-            try {
-                radius = styleContext.get_property('border-radius', Gtk.StateFlags.NORMAL);
-                 // Attempt to apply GTK theme rendering for the corner shape
-                // This is more of an advanced GTK feature.
-                // Gtk.render_frame(styleContext, cr, 0,0, radius, radius); // Example
-            } catch (e) {
-                console.warn("Could not get border-radius for RoundedCorner, defaulting to 0 or CSS defined size.", e);
-                radius = props.css?.match(/min-width:\s*(\d+)px/)?.[1] || 12; // Fallback from CSS or default
-            }
-            self.set_size_request(radius, radius);
+    return (
+        <drawingarea
+            {...props}
+            hpack={getHPack()}
+            vpack={getVPack()}
+            drawFn={drawFn}
+            $={self => { // Use $ for setup
+                const styleContext = self.get_style_context();
+                try {
+                    radius = styleContext.get_property('border-radius', Gtk.StateFlags.NORMAL);
+                } catch (e) {
+                    console.warn("RoundedCorner: Could not get border-radius from style, using fallback.", e);
+                    // Fallback if props.css was a thing, otherwise a default.
+                    // props.css is not standard. Rely on CSS class or default.
+                    radius = 12; // Default fallback radius
+                }
+                self.set_size_request(radius, radius);
 
-            // If the component relies on CSS for 'border-radius' and 'background-color',
-            // ensure the CSS is applied to this widget. E.g. by adding a class name.
-            if(!props.className) {
-                self.add_css_class('rounded-corner-widget'); // Add a default class if none provided
-            }
-        }
-    });
+                if(!props.class) { // Check for 'class' in JSX
+                    self.add_css_class('rounded-corner-widget');
+                }
+            }}
+        />
+    );
 }

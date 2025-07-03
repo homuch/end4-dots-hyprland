@@ -14,12 +14,11 @@ import { checkKeybind } from '../../utils/keybindUtils.js';
 import { updateNestedProperty } from '../../utils/objectUtils.js';
 import { options as userOptions } from '../../options.js';
 
-// Placeholders for content components
-const PlaceholderContentWidget = (name) => () => box({ child: label({ label: `Content for ${name}` }), vexpand: true, hexpand: true });
-const ApiWidgetsDisplay = PlaceholderContentWidget("APIs"); // Placeholder for modules/sideleft/apiwidgets.js
-const ToolBoxDisplay = PlaceholderContentWidget("Tools");    // Placeholder for modules/sideleft/toolbox.js
-// Placeholder for chatEntry that should be exported by ApiWidgets.js
-// This ref will be populated by ApiWidgetsDisplay if it exposes it.
+// Import actual content components (which are currently placeholders internally)
+import ApiWidgetsDisplay from './sideleft/ApiWidgets.js';
+import ToolBoxDisplay from './sideleft/Toolbox.js';
+
+// chatEntryRef will be passed to ApiWidgetsDisplay, which should manage it.
 const chatEntryRef = { widget: null, grab_focus: () => chatEntryRef.widget?.grab_focus() };
 
 const getString = (str) => str; // i18n placeholder

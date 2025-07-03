@@ -1,6 +1,6 @@
-import App from 'ags/app';
-import Gdk from 'gi://Gdk';
-import { eventbox, box } from 'ags/widgets';
+import app from 'ags/gtk4/app'; // Corrected import
+import { Gtk, Gdk } from 'ags/gtk4'; // Import Gtk for GestureClick
+import { box } from 'ags/widgets'; // Assuming box is an intrinsic
 
 // Helper function to close windows across monitors
 // Assumes window names are like "basenameM" e.g., "cheatsheet0", "cheatsheet1"
@@ -44,31 +44,30 @@ export default function ClickCloseRegion({
         }
     }
 
-    return eventbox({
-        ...props,
-        className: `click-close-region ${className}`,
-        onButtonPressEvent: (widget, event) => { // Use the more specific signal if available
-            if (multimonitor) {
-                closeWindowOnAllMonitorsV2(name);
-            } else {
-                // If the window name is per-monitor, construct it
-                // Otherwise, just use 'name'. This depends on naming convention.
-                // For now, assume 'name' is complete if not multimonitor.
-                // Or, if name is like "cheatsheet" and it's for a specific monitorId:
-                // App.closeWindow(`${name}${monitorId}`);
-                App.closeWindow(name); // Assuming name is already specific or global
-            }
-            return Gdk.EVENT_STOP; // Stop event propagation
-        },
-        child: box({
-            // If expand is true, it will try to fill its parent.
-            // If fillMonitor is used, minWidth/Height give it a large size.
-            hexpand: expand,
-            vexpand: expand,
-            css: `
+    // Use a Box and add a Gtk.GestureClick to it.
+    return (
+        <box
+            {...props}
+            class={`click-close-region ${className}`}
+            hexpand={expand}
+            vexpand={expand}
+            css={`
                 ${minWidth > 0 ? `min-width: ${minWidth}px;` : ''}
                 ${minHeight > 0 ? `min-height: ${minHeight}px;` : ''}
-            `,
-        }),
-    });
+            `}
+            $={self => { // Setup
+                const gesture = Gtk.GestureClick.new();
+                gesture.connect('released', (gesture, n_press, x, y) => {
+                    // gesture.set_state(Gtk.EventSequenceState.CLAIMED); // Claim event
+                    if (multimonitor) {
+                        closeWindowOnAllMonitorsV2(name);
+                    } else {
+                        app.closeWindow(name);
+                    }
+                    // No need to return Gdk.EVENT_STOP from gesture signal handlers explicitly unless needed to block other controllers.
+                });
+                self.add_controller(gesture);
+            }}
+        />
+    );
 }

@@ -1,4 +1,5 @@
-import { label as AgsLabel } from 'ags/widgets'; // Use 'agsLabel' to avoid conflict if 'label' is a prop name
+// No direct import needed for <label> intrinsic from 'ags/widgets'
+// import Gtk from 'gi://Gtk'; // Only if specific Gtk.Label properties not covered by intrinsic are needed
 
 /**
  * A simple widget for displaying Material Icons using a label.
@@ -12,12 +13,8 @@ import { label as AgsLabel } from 'ags/widgets'; // Use 'agsLabel' to avoid conf
  * @param {object=} props.props Other properties to pass to the Label widget.
  */
 export default function MaterialIcon({ icon, size, className = '', ...props }) {
-    const sizeClass = size ? `txt-${size}` : 'txt-norm'; // Default to 'norm' if size not specified
+    const sizeClass = size ? `txt-${size}` : 'txt-norm';
     const combinedClassName = `icon-material ${sizeClass} ${className}`.trim();
 
-    return AgsLabel({
-        className: combinedClassName,
-        label: icon,
-        ...props,
-    });
+    return <label class={combinedClassName} label={icon} {...props} />;
 }

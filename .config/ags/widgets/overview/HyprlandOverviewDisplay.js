@@ -9,7 +9,7 @@ import { box, label, button, icon as AgsIcon, revealer, eventbox, fixed as AgsFi
 import { createState, createEffect, createBinding, Utils } from 'ags';
 import { execAsync } from 'ags/process';
 
-import Hyprland from '../../../services/hyprlandService.js'; // Placeholder/real service
+import Hyprland from 'ags/service/hyprland'; // Corrected
 import { options as userOptions } from '../../../options.js';
 import { setupCursorHover, setupCursorHoverGrab } from '../../../utils/cursorHover.js';
 import { dumpToWorkspace, swapWorkspace } from '../../../utils/overviewActions.js';

@@ -1,19 +1,15 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import GtkSource from 'gi://GtkSource?version=4'; // Assuming GtkSource v4 or v5 for GTK4
-import App from 'ags/app';
-import { exec, execAsync, writeFile } from 'ags/process'; // AGS v2 utils (writeFile from ags/file if process doesn't have it)
-// Note: Original used Utils.writeFileSync. ags/file has writeFileAsync and writeFileSync.
-// Using writeFile from ags/process if it's sync, or import from ags/file.
-// Let's assume ags/process.writeFile is synchronous like original Utils.writeFileSync for this specific override file.
-// If not, adjust to use writeFileSync from ags/file. For now, mapping Utils.writeFileSync to a sync behavior.
-// Safest is to use `writeFileSync` from `ags/file`.
-import { writeFileSync } from 'ags/file';
+// GtkSource import needs to be dynamic based on getSourceViewVersion or use a fixed version known to work.
+// For now, keeping ActualGtkSource which is dynamically resolved.
+import app from 'ags/gtk4/app'; // Corrected
+import { exec, execAsync } from 'ags/process'; // exec is fine, writeFile was an issue
+import { writeFileSync } from 'ags/file'; // Correct: use this for sync writes
+import { createEffect } from 'ags'; // Moved import to top
 
-
-import { darkMode } from '../utils/system.js'; // The reactive state accessor
-import { options as userOptions } from '../options.js'; // Loaded user options
-import { COMPILED_STYLE_DIR } from '../app.js'; // Get it from app.js
+import { darkMode } from '../../utils/system.js'; // Corrected path
+import { options as userOptions } from '../../options.js'; // Corrected path
+import { COMPILED_STYLE_DIR } from '../../app.js'; // Corrected path
 
 function getSourceViewVersion() {
     try {
@@ -37,7 +33,7 @@ const ActualGtkSource = imports.gi.GtkSource; // Will be version 3, 4 or 5 based
 
 function loadSourceViewColorScheme() {
     // Determine path based on dark mode state from the darkMode accessor
-    const schemePath = `${App.configDir}/assets/themes/sourceviewtheme${darkMode.value ? '' : '-light'}.xml`;
+    const schemePath = `${app.configDir}/assets/themes/sourceviewtheme${darkMode.value ? '' : '-light'}.xml`; // Corrected
 
     const file = Gio.File.new_for_path(schemePath);
     if (!file.query_exists(null)) {
@@ -94,15 +90,15 @@ export function handleStyles(resetMusic = false) {
         const sassCommand = [
             'sass',
             `-I "${GLib.get_user_state_dir()}/ags/scss"`,
-            `-I "${App.configDir}/scss/fallback"`,
-            `"${App.configDir}/scss/main.scss"`,
+            `-I "${app.configDir}/scss/fallback"`, // Corrected
+            `"${app.configDir}/scss/main.scss"`,   // Corrected
             `"${COMPILED_STYLE_DIR}/style.css"`
         ].join(' ');
 
         try {
             await execAsync(['bash', '-c', sassCommand]);
-            App.resetCss(); // Still available in v2 App
-            App.applyCss(`${COMPILED_STYLE_DIR}/style.css`); // Still available in v2 App
+            app.resetCss(); // Corrected
+            app.applyCss(`${COMPILED_STYLE_DIR}/style.css`); // Corrected
             console.log('[LOG] Styles loaded');
         } catch (error) {
             console.error('Error applying styles:', error);
